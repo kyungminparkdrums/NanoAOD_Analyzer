@@ -156,6 +156,18 @@ public:
 };
 
 /////////////////////////////////////////////////////////////////////////
+class GenJets : public Particle {
+
+public:
+  GenJets();
+  GenJets(TTree*, std::string, std::vector<std::string>);
+  
+UChar_t  genHadronFlavor[MAXINDEX];
+int      genPartonFlavor[MAXINDEX];
+  
+};
+
+/////////////////////////////////////////////////////////////////////////
 class Jet : public Particle {
 
 public:
@@ -181,6 +193,9 @@ public:
   int numberOfConstituents[MAXINDEX];
   int puID[MAXINDEX];
   int partonFlavour[MAXINDEX];
+  float rawFactor[MAXINDEX];
+  int matchingMuonIdx1[MAXINDEX];
+  int matchingMuonIdx2[MAXINDEX];
 
  protected:
 
