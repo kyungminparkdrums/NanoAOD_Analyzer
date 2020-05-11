@@ -34,8 +34,14 @@ struct CRTester;
 #include "FillInfo.h"
 #include "CRTest.h"
 #include "Systematics.h"
-#include "JetScaleResolution.h"
 #include "DepGraph.h"
+#include "JetScaleResolution.h"
+#include "JetRecalibrator.h"
+#include "CondFormats/JetMETObjects/interface/JetResolution.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
+#include "JetMETCorrections/Modules/interface/JetResolution.h"
+#include "CondFormats/JetMETObjects/interface/JetResolutionObject.h"
 
 double normPhi(double phi);
 double absnormPhi(double phi);
