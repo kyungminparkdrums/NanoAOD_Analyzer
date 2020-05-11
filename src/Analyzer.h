@@ -123,7 +123,7 @@ public:
   TLorentzVector matchLeptonToGen(const TLorentzVector&, const PartStats&, CUTS);
   TLorentzVector matchTauToGen(const TLorentzVector&, double);
   TLorentzVector matchHadTauToGen(const TLorentzVector&, double);
-  TLorentzVector matchJetToGen(const TLorentzVector&, const PartStats&, CUTS);
+  TLorentzVector matchJetToGen(const TLorentzVector&, const double&, CUTS);
 
   int matchToGenPdg(const TLorentzVector& lvec, double minDR);
 

@@ -1462,6 +1462,21 @@ void Analyzer::smearJet(Particle& jet, const CUTS eGenPos, const PartStats& stat
 
   std::string systname = syst_names.at(syst);
 
+  double genJetMatchDR = 0.0;
+
+  try{
+    genJetMatchDR = jet.pstats["Smear"].dmap.at("GenMatchingDeltaR");
+  }
+  catch(std::out_of_range& err){
+      // std::cerr << "ERROR in smearJet: " << err.what() << std::endl;
+      // std::cout << "\tThe option GenMatchingDeltaR is missing from Jet_info.in" << std::endl;
+      // std::cout << "\tSetting GenMatchingDeltaR to 0.4 by default." << std::endl;
+      if(jet.type == PType::Jet) genJetMatchDR = 0.4;
+      else if(jet.type == PType::FatJet) genJetMatchDR = 0.8;
+      // std::cout << "error: genJetMatchDR = " << genJetMatchDR << std::endl;
+  }
+
+
   for(size_t i=0; i< jet.size(); i++) {
     TLorentzVector jetReco = jet.RecoP4(i);
     if(JetMatchesLepton(*_Muon, jetReco, stats.dmap.at("MuonMatchingDeltaR"), CUTS::eGMuon) ||
@@ -1474,7 +1489,7 @@ void Analyzer::smearJet(Particle& jet, const CUTS eGenPos, const PartStats& stat
     double sf=1.;
     //only apply corrections for jets not for FatJets
 
-    TLorentzVector genJet = matchJetToGen(jetReco, jet.pstats["Smear"],eGenPos);
+    TLorentzVector genJet = matchJetToGen(jetReco, genJetMatchDR, eGenPos);
     if(systname=="orig" && stats.bfind("SmearTheJet")){
       sf=jetScaleRes.GetRes(jetReco,genJet, rho, 0);
     }else if(systname=="Jet_Res_Up"){
@@ -1560,7 +1575,7 @@ TLorentzVector Analyzer::matchTauToGen(const TLorentzVector& lvec, double lDelta
 
 
 ////checks if reco object matchs a gen object.  If so, then reco object is for sure a correctly identified particle
-TLorentzVector Analyzer::matchJetToGen(const TLorentzVector& recoJet4Vector, const PartStats& stats, CUTS ePos) {
+TLorentzVector Analyzer::matchJetToGen(const TLorentzVector& recoJet4Vector, const double& matchDeltaR, CUTS ePos) {
   //for the future store gen jets
   /*
   for(auto it : *active_part->at(ePos)) {
@@ -1571,9 +1586,11 @@ TLorentzVector Analyzer::matchJetToGen(const TLorentzVector& recoJet4Vector, con
     }
   }
   */
+
   for(auto it : *active_part->at(ePos)) {
-    if(recoJet4Vector.DeltaR(_GenJet->p4(it)) > stats.dmap.at("GenMatchingDeltaR")) continue;
-    
+
+    if(recoJet4Vector.DeltaR(_GenJet->p4(it)) > matchDeltaR) continue;
+
     return _GenJet->p4(it);
   }
   return TLorentzVector(0,0,0,0);
