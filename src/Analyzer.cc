@@ -209,7 +209,10 @@ Analyzer::Analyzer(std::vector<std::string> infiles, std::string outfile, bool s
   histo = Histogramer(1, filespace+"Hist_entries.in", filespace+"Cuts.in", outfile, isData, cr_variables);
   if(doSystematics)
     syst_histo=Histogramer(1, filespace+"Hist_syst_entries.in", filespace+"Cuts.in", outfile, isData, cr_variables,syst_names);
+  
   systematics = Systematics(distats);
+  
+  setupJetCorrections(year, outfile); 
   jetScaleRes = JetScaleResolution("Pileup/Summer16_23Sep2016V4_MC_Uncertainty_AK4PFchs.txt", "",  "Pileup/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt", "Pileup/Spring16_25nsV6_MC_SF_AK4PFchs.txt");
 
 
@@ -633,6 +636,7 @@ void Analyzer::preprocess(int event, std::string year){ // This function no long
     // Initialize the lists of generator-level particles.
     _Gen->setOrigReco();
     _GenHadTau->setOrigReco();
+    _GenJet->setOrigReco();
 
     getGoodGen(_Gen->pstats["Gen"]);
     getGoodGenHadronicTaus(_GenHadTau->pstats["Gen"]);
@@ -1445,6 +1449,114 @@ void Analyzer::smearLepton(Lepton& lep, CUTS eGenPos, const PartStats& stats, co
     }
   }
 }
+
+
+void Analyzer::setupJetCorrections(std::string year, std::string outputfilename){
+
+  // jetScaleRes = JetScaleResolution("Pileup/Summer16_23Sep2016V4_MC_Uncertainty_AK4PFchs.txt", "",  "Pileup/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt", "Pileup/Spring16_25nsV6_MC_SF_AK4PFchs.txt");
+  //jetScaleRes = JetScaleResolution("Pileup/JetResDatabase/textFiles/Summer16_25nsV1_DATA_PtResolution_AK8PFPuppi.txt", "Pileup/JetResDatabase/textFiles/Summer16_25nsV1_DATA_SF_AK8PFPuppi.txt", "Pileup/JetResDatabase/textFiles/Summer16_07Aug2017GH_V11_DATA_UncertaintySources_AK4PFchs.txt", "Total");
+
+  // if(! jet.pstats["Smear"].bfind("DoJetRecalibration") ) return;
+
+  // ------------------------ NEW: Jet Energy Scale and Resolution corrections initialization ------------------- //
+  static std::map<std::string, std::string> jecTagsMC = {
+    {"2016" , "Summer16_07Aug2017_V11_MC"}, 
+    {"2017" , "Fall17_17Nov2017_V32_MC"}, 
+    {"2018" , "Autumn18_V19_MC"}
+  };
+
+  static std::map<std::string, std::string> jecTagsFastSim = {
+    {"2016" , "Summer16_FastSimV1_MC"},
+    {"2017" , "Fall17_FastSimV1_MC"},
+    {"2018" , "Autumn18_FastSimV1_MC"}
+  };
+
+  static std::map<std::string, std::string> archiveTagsDATA = {
+    {"2016" , "Summer16_07Aug2017_V11_DATA"}, 
+    {"2017" , "Fall17_17Nov2017_V32_DATA"}, 
+    {"2018" , "Autumn18_V19_DATA"}
+  };
+
+  static std::map<std::string, std::string> jecTagsDATA = { 
+    {"2016B" , "Summer16_07Aug2017BCD_V11_DATA"}, 
+    {"2016C" , "Summer16_07Aug2017BCD_V11_DATA"}, 
+    {"2016D" , "Summer16_07Aug2017BCD_V11_DATA"}, 
+    {"2016E" , "Summer16_07Aug2017EF_V11_DATA"}, 
+    {"2016F" , "Summer16_07Aug2017EF_V11_DATA"}, 
+    {"2016G" , "Summer16_07Aug2017GH_V11_DATA"}, 
+    {"2016H" , "Summer16_07Aug2017GH_V11_DATA"}, 
+    {"2017B" , "Fall17_17Nov2017B_V32_DATA"}, 
+    {"2017C" , "Fall17_17Nov2017C_V32_DATA"}, 
+    {"2017D" , "Fall17_17Nov2017DE_V32_DATA"}, 
+    {"2017E" , "Fall17_17Nov2017DE_V32_DATA"}, 
+    {"2017F" , "Fall17_17Nov2017F_V32_DATA"}, 
+    {"2018A" , "Autumn18_RunA_V19_DATA"},
+    {"2018B" , "Autumn18_RunB_V19_DATA"},
+    {"2018C" , "Autumn18_RunC_V19_DATA"},
+    {"2018D" , "Autumn18_RunD_V19_DATA"}
+  };
+
+  static std::map<std::string, std::string> jerTagsMC = {
+    {"2016" , "Summer16_25nsV1_MC"},
+    {"2017" , "Fall17_V3_MC"},
+    {"2018" , "Autumn18_V7_MC"}
+  };
+
+  std::string jertag = jerTagsMC.begin()->second;
+  std::string jectag = jecTagsMC.begin()->second;
+  std::string jectagfastsim = jecTagsFastSim.begin()->second;
+  std::string archivetag = archiveTagsDATA.begin()->second;
+
+
+  if(isData){
+
+    std::string delimiter = ("_Run"+year).c_str();
+    unsigned int pos = outputfilename.find(delimiter.c_str()) + delimiter.length();
+    std::string runera = (year+outputfilename.substr(pos,1)).c_str(); 
+
+    jectag = jecTagsDATA[runera];
+    jertag = jerTagsMC[year];
+    archivetag = archiveTagsDATA[year];
+  }
+  else{
+    jertag = jerTagsMC[year];
+    jectag = jecTagsMC[year];
+    jectagfastsim = jecTagsFastSim[year];
+  }
+
+  try{
+    jetScaleRes = JetScaleResolution((PUSPACE+"JetResDatabase/textFiles/"+jectag+"_Uncertainty_AK4PFchs.txt").c_str(),"Total",(PUSPACE+"JetResDatabase/textFiles/"+jertag+"_PtResolution_AK4PFchs.txt").c_str(), (PUSPACE+"JetResDatabase/textFiles/"+jertag+"_SF_AK4PFchs.txt").c_str());
+  }
+  catch(edm::Exception &err){
+    std::cerr << "Error in setupJetCorrections (JetScaleResolution): " << err.what() << std::endl;
+    std::cerr << "\tAborting Analyzer..." << std::endl;
+    std::abort();
+  }
+  catch(...){
+    std::cerr << "Error in setupJetCorrections (JetScaleResolution): unknown Exception" << std::endl;
+    std::cerr << "\tAborting Analyzer..." << std::endl;
+    std::abort();
+   }
+
+  try{
+    // Arguments: JetRecalibrator(const std::string path, const std::string globalTag, const std::string jetFlavor, const std::string type, bool doResidualJECs, int upToLevel=3, bool calculateSeparateCorrections=false, bool calculateTypeIMETCorr=false);
+    jetRecalib = JetRecalibrator((PUSPACE+"JetResDatabase/textFiles/").c_str(), jectag, "AK4PFchs", "Total", true); 
+    jetRecalibL1 = JetRecalibrator((PUSPACE+"JetResDatabase/textFiles/").c_str(), jectag, "AK4PFchs", "Total", false, 1, true); 
+  }
+  catch(std::runtime_error& err){
+    std::cerr << "Error in setupJetCorrections (JetRecalibrator): " << err.what() << std::endl;
+    std::cerr << "\tAborting Analyzer..." << std::endl;
+    std::abort();
+
+  }
+  catch(...){
+    std::cerr << "Error in setupJetCorrections (JetRecalibrator): unknown Exception" << std::endl;
+    std::cerr << "\tAborting Analyzer..." << std::endl;
+    std::abort();
+  }
+
+}
+
 
 ///Same as smearlepton, just jet specific
 void Analyzer::smearJet(Particle& jet, const CUTS eGenPos, const PartStats& stats, int syst) {

@@ -166,6 +166,7 @@ public:
   double getZBoostWeight();
   double getTopBoostWeight(); //01.15.19
   void setupBJetSFInfo(const PartStats&, std::string); // new function that sets up the b-tagging SF info
+  void setupJetCorrections(std::string, std::string);
   double getBJetSF(CUTS, const PartStats&); //01.16.19
   double getBJetSFResUp(CUTS, const PartStats&); //01.16.19
   double getBJetSFResDown(CUTS, const PartStats&); //01.16.19
@@ -215,6 +216,8 @@ public:
   static const std::unordered_map<std::string, CUTS> cut_num;
 
   Systematics systematics;
+  JetRecalibrator jetRecalib;
+  JetRecalibrator jetRecalibL1;
   JetScaleResolution jetScaleRes;
   PartStats genStat;
 
