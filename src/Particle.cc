@@ -51,6 +51,7 @@ double Particle::pt(uint index)const         {return cur_P->at(index).Pt();}
 double Particle::eta(uint index)const        {return cur_P->at(index).Eta();}
 double Particle::phi(uint index)const        {return cur_P->at(index).Phi();}
 double Particle::energy(uint index)const     {return cur_P->at(index).E();}
+double Particle::mass(uint index)const       {return cur_P->at(index).M();}
 double Particle::charge(uint index)const     {return 0;}
 
 uint Particle::size()const                   {return cur_P->size();}

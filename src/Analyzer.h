@@ -117,7 +117,7 @@ public:
   void setCutNeeds();
 
   void smearLepton(Lepton&, CUTS, const PartStats&, const PartStats&, int syst=0);
-  void smearJet(Particle&, CUTS, const PartStats&, int syst=0);
+  void smearJetRes(Particle&, CUTS, const PartStats&, int syst=0);
 
   bool JetMatchesLepton(const Lepton&, const TLorentzVector&, double, CUTS);
   TLorentzVector matchLeptonToGen(const TLorentzVector&, const PartStats&, CUTS);
@@ -285,7 +285,7 @@ public:
   BTagEntry::JetFlavor bjetflavor;
   BTagEntry::OperatingPoint b_workingpoint;
 
-  double rho =20.;
+  Float_t jec_rho =20.;
 
   const static std::vector<CUTS> genCuts;
   const static std::vector<CUTS> jetCuts;

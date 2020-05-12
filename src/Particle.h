@@ -55,6 +55,7 @@ public:
   double eta(uint) const;
   double phi(uint) const;
   double energy(uint) const;
+  double mass(uint) const;
   virtual double charge(uint) const;
   TLorentzVector p4(uint) const;
   TLorentzVector& p4(uint);
