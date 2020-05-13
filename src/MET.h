@@ -29,8 +29,8 @@ class Met {
 
 public:
   Met(){};
-  Met(TTree*, std::string, std::string, std::vector<std::string>){};
-  Met(TTree*, std::string, std::vector<std::string>, double);
+  Met(TTree*, std::string, std::string, std::vector<std::string>, std::string){};
+  Met(TTree*, std::string, std::vector<std::string>, double, std::string);
   virtual ~Met() {}
 
   virtual std::vector<CUTS> findExtraCuts(){return std::vector<CUTS>();}
@@ -56,8 +56,26 @@ public:
   std::string getName() {return GenName;};
   void update(PartStats&, Jet&, int);
 
+  void propagateJetEnergyCorr(TLorentzVector recoJet, double const& jer_sf_nom, double const& jec_param, std::string& systname, int syst);  
+
+
   TLorentzVector Reco;
+  TLorentzVector RawMet;
+  TLorentzVector DefMet;
   TLorentzVector *cur_P;
+
+  float met_px;
+  float met_py;
+  float met_px_shifted;
+  float met_py_shifted;
+  float def_met_pt;
+  float def_met_phi;
+  float raw_met_pt;
+  float raw_met_phi;
+  float def_met_px;
+  float def_met_py;
+  float t1met_px;
+  float t1met_py;
 
   std::vector<TLorentzVector* > systVec;
   std::vector<double> systdeltaMEx;

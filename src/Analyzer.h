@@ -166,12 +166,14 @@ public:
   double getZBoostWeight();
   double getTopBoostWeight(); //01.15.19
   void setupBJetSFInfo(const PartStats&, std::string); // new function that sets up the b-tagging SF info
-  void setupJetCorrections(std::string, std::string);
   double getBJetSF(CUTS, const PartStats&); //01.16.19
   double getBJetSFResUp(CUTS, const PartStats&); //01.16.19
   double getBJetSFResDown(CUTS, const PartStats&); //01.16.19
   std::pair<double, double> getPZeta(const TLorentzVector&, const TLorentzVector&);
   void create_fillInfo();
+
+  void setupJetCorrections(std::string, std::string);
+  void applyJetEnergyCorrections(Particle&, CUTS, const PartStats&, std::string, int syst=0);
 
   inline bool passCutRange(std::string, double, const PartStats&);
   bool passCutRange(double, const std::pair<double, double>&);

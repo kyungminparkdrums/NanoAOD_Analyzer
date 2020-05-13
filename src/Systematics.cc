@@ -18,6 +18,8 @@ void Systematics::shiftParticle(Particle& jet, TLorentzVector recoJet, double co
   // Set the new components of the 4-momentum
   shiftedRecoJet.SetPtEtaPhiM(corrJetPt, recoJet.Eta(), recoJet.Phi(), corrJetMass);
 
+  // std::cout << "I get here in shift particle" << std::endl;
+
   jet.addP4Syst(shiftedRecoJet, syst);
   return;
 

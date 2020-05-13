@@ -4,10 +4,19 @@
 #define SetBranch(name, variable) BOOM->SetBranchStatus(name, true);  BOOM->SetBranchAddress(name, &variable);
 
 //particle is a objet that stores multiple versions of the particle candidates
-Met::Met(TTree* _BOOM, std::string _GenName,  std::vector<std::string> _syst_names, double _MT2mass) : BOOM(_BOOM), GenName(_GenName), syst_names(_syst_names), MT2mass(_MT2mass)  {
+Met::Met(TTree* _BOOM, std::string _GenName,  std::vector<std::string> _syst_names, double _MT2mass, std::string year) : BOOM(_BOOM), GenName(_GenName), syst_names(_syst_names), MT2mass(_MT2mass)  {
 
+  if(year.compare("2017") == 0) GenName = (GenName+"FixEE2017").c_str();
+
+  // This refers to the met selected for the particular year
   SetBranch((GenName+"_pt").c_str(), m_pt);
   SetBranch((GenName+"_phi").c_str(), m_phi);
+  // Then we get the default met
+  SetBranch("MET_pt", def_met_pt);
+  SetBranch("MET_phi", def_met_phi);
+  // Then we get the raw met for Type-I corrections
+  SetBranch("RawMET_pt", raw_met_pt);
+  SetBranch("RawMET_phi", raw_met_phi);
 
   systdeltaMEx.resize(syst_names.size());
   systdeltaMEy.resize(syst_names.size());
@@ -59,17 +68,40 @@ void Met::init(){
   //cleanup of the particles
   //keep this if there is any ever some need for a unchanged met
   Reco.SetPtEtaPhiM(m_pt,0,m_phi,m_pt);
+  DefMet.SetPtEtaPhiM(def_met_pt,0,def_met_phi,def_met_pt);
+  RawMet.SetPtEtaPhiM(raw_met_pt,0,raw_met_phi,raw_met_pt);
+  
+  // Get the x and y components of the raw MET
+
+  met_px = RawMet.Px();
+  met_py = RawMet.Py();
+  /*
+  met_px_nom = met_px;
+  met_py_nom = met_py;
+  met_px_jer = met_px;
+  met_py_jer = met_py;
+  met_px_jerShifted= met_px;
+  met_py_jerShifted= met_py;
+  met_px_jesShifted= met_px;
+  met_py_jesShifted= met_py;
+  */
+  def_met_px = DefMet.Px();
+  def_met_py = DefMet.Py();
+  t1met_px = Reco.Px();
+  t1met_py = Reco.Py();
   
   for(int i=0; i < (int) syst_names.size(); i++) {
     
     if(i == Unclup) systVec.at(i)->SetPxPyPzE(MetUnclUp[0]+Reco.Px(),MetUnclUp[1]+Reco.Py(),0,sqrt(pow(MetUnclUp[0]+Reco.Px(),2)+pow(MetUnclUp[1]+Reco.Py(),2)));
     else if(i == Uncldown) systVec.at(i)->SetPxPyPzE(MetUnclDown[0]+Reco.Px(),MetUnclDown[1]+Reco.Py(),0,sqrt(pow(MetUnclDown[0]+Reco.Px(),2)+pow(MetUnclDown[1]+Reco.Py(),2)));
-    else if(systVec.at(i) != nullptr) addP4Syst(Reco, i);
+    // else if(systVec.at(i) != nullptr) addP4Syst(Reco, i);
+    else if(systVec.at(i) != nullptr) addP4Syst(RawMet, i);
     
     fill(systdeltaMEx.begin(), systdeltaMEx.end(), 0);
     fill(systdeltaMEy.begin(), systdeltaMEy.end(), 0);
   }
-  cur_P=&Reco;
+  // cur_P=&Reco;
+  cur_P=&RawMet;
 
   // syst_HT[activeSystematic]=0.;
   // syst_MHT[activeSystematic]=0.;
@@ -106,6 +138,32 @@ void Met::update(PartStats& stats, Jet& jet, int syst=0){
                                systVec.at(syst)->Py()+systdeltaMEy[syst], 
                                systVec.at(syst)->Pz(), 
                                TMath::Sqrt(pow(systVec.at(syst)->Px()+systdeltaMEx[syst],2) + pow(systVec.at(syst)->Py()+systdeltaMEy[syst],2)));
+
+}
+
+
+void Met::propagateJetEnergyCorr(TLorentzVector recoJet, double const& jet_pt_up, double const& jet_pt_down, std::string& systname, int syst){
+
+  if(systVec.at(syst) == nullptr) return;
+
+  double jet_cosPhi = cos(recoJet.Phi());
+  double jet_sinPhi = sin(recoJet.Phi());
+
+  // Update the nominal values:
+  met_px_shifted = systVec.at(syst)->Px();
+  met_py_shifted = systVec.at(syst)->Py();
+
+  std::cout << "met_px_shifted (b) = " << met_px_shifted << ", met_py_shifted (b) = " << met_py_shifted << std::endl;
+
+  // update shifted values
+  met_px_shifted = met_px_shifted - (jet_pt_up - jet_pt_down) * jet_cosPhi;
+  met_py_shifted = met_py_shifted - (jet_pt_up - jet_pt_down) * jet_sinPhi;
+
+  std::cout << "met_px_shifted (a) = " << met_px_shifted << ", met_py_shifted (a) = " << met_py_shifted << std::endl;
+
+
+  // Add this to the systematics vector
+  systVec.at(syst)->SetPxPyPzE(met_px_shifted, met_py_shifted, systVec.at(syst)->Pz(), TMath::Sqrt(pow(met_px_shifted,2) + pow(met_py_shifted,2)));
 
 }
 
