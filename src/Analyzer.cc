@@ -147,7 +147,12 @@ Analyzer::Analyzer(std::vector<std::string> infiles, std::string outfile, bool s
 
   _FatJet   = new FatJet(BOOM, filespace + "FatJet_info.in", syst_names, year);
 
-  _MET      = new Met(BOOM, "MET" , syst_names, distats["Run"].dmap.at("MT2Mass"), year);
+  if(year.compare("2017") == 0){
+    _MET      = new Met(BOOM, "METFixEE2017" , syst_names, distats["Run"].dmap.at("MT2Mass"));
+  }
+  else{
+    _MET      = new Met(BOOM, "MET" , syst_names, distats["Run"].dmap.at("MT2Mass"));
+  }
 
 	
   // B-tagging scale factor stuff
@@ -682,12 +687,12 @@ void Analyzer::preprocess(int event, std::string year){ // This function no long
   size_t jetsize = _Jet->size();
   ////check update met is ok
   for(size_t i=0; i < syst_names.size(); i++) {
-    for(size_t i=0; i < _Jet->size(); i++) {
-      if(i % jetsize == 0) std::cout << std::endl;
+    //for(size_t i=0; i < _Jet->size(); i++) {
+      //if(i % jetsize == 0) std::cout << std::endl;
       // std::cout << "Reco jet (after loop): pt = " << _Jet->RecoP4(i).Pt() << ", mass = " << _Jet->RecoP4(i).M() << ", eta = " << _Jet->RecoP4(i).Eta() << ", phi = " << _Jet->RecoP4(i).Phi() << std::endl; 
-      std::cout << "Jet (before updating): pt = " << _Jet->p4(i).Pt() << ", mass = " << _Jet->p4(i).M() << ", eta = " << _Jet->p4(i).Eta() << ", phi = " << _Jet->p4(i).Phi() << std::endl; 
+      //std::cout << "Jet (before updating): pt = " << _Jet->p4(i).Pt() << ", mass = " << _Jet->p4(i).M() << ", eta = " << _Jet->p4(i).Eta() << ", phi = " << _Jet->p4(i).Phi() << std::endl; 
       //std::cout << "Reco jet (before loop): pt = " << _Jet->pt(i) << ", mass = " << _Jet->mass(i) << ", eta = " << _Jet->eta(i) << ", phi = " << _Jet->phi(i) << std::endl; 
-    }
+    //}
 
     std::cout << "Met value (before updating): px = " << _MET->px() << ", py = " << _MET->py() << std::endl;
      //////Smearing
@@ -1613,15 +1618,15 @@ void Analyzer::applyJetEnergyCorrections(Particle& jet, const CUTS eGenPos, cons
   std::cout << "Systematic #" << syst << ": " << systname << std::endl;
   //std::cout << "Total number of systematics = " << syst_names.size() << std::endl;
 
-  /*
+  
   for(size_t i=0; i< _Jet->size(); i++) {
     // std::cout << "Reco jet (before loop): pt = " << _Jet->RecoP4(i).Pt() << ", mass = " << _Jet->RecoP4(i).M() << ", eta = " << _Jet->RecoP4(i).Eta() << ", phi = " << _Jet->RecoP4(i).Phi() << std::endl; 
     std::cout << "Jet (before loop): pt = " << _Jet->p4(i).Pt() << ", mass = " << _Jet->p4(i).M() << ", eta = " << _Jet->p4(i).Eta() << ", phi = " << _Jet->p4(i).Phi() << std::endl; 
     //std::cout << "Reco jet (before loop): pt = " << _Jet->pt(i) << ", mass = " << _Jet->mass(i) << ", eta = " << _Jet->eta(i) << ", phi = " << _Jet->phi(i) << std::endl; 
 
   }  
-   std::cout << "--------" << std::endl;
-   */
+  std::cout << "--------" << std::endl;
+  
   // Here we apply the jet energy resolution corrections if desired for the nominal value and the same goes for the systematics up and down.
   // That's why here we call the smearJetRes function.
 
@@ -1666,7 +1671,7 @@ void Analyzer::applyJetEnergyCorrections(Particle& jet, const CUTS eGenPos, cons
     jet_Mass = jetRecalib.correctedP4(origJetReco, jec, jet_RawFactor).M();
     
     // Calculate the pt only for the L1 corrections since it will be used later.
-    double jet_Pt_L1 = jetRecalibL1.correctedP4(origJetReco, jecL1, jet_RawFactor).Pt();
+    jet_pt_L1 = jetRecalibL1.correctedP4(origJetReco, jecL1, jet_RawFactor).Pt();
 
 
     // Check if this jet is used for type-I MET
@@ -1794,10 +1799,13 @@ void Analyzer::applyJetEnergyCorrections(Particle& jet, const CUTS eGenPos, cons
     jet_pt_L1L2L3 = jet_pt_noMuL1L2L3 + muon_pt;
     jet_pt_L1 = jet_pt_noMuL1 + muon_pt;
 
+    std::cout << "jet_pt_L1L2L3 = " << jet_pt_L1L2L3  << ", jet_pt_L1 = " << jet_pt_L1 << ", origJetReco.Eta() = " << origJetReco.Eta() << ", origJetReco.Phi() = " << origJetReco.Phi() << ", jet_rawPt = " << jet_rawPt << std::endl;
+
     if(year.compare("2017") == 0){
-    
+      std::cout << "This is 2017" << std::endl;
+
       if(jet_pt_L1L2L3 > jetUnclEnThreshold && (abs(origJetReco.Eta()) > 2.65 && abs(origJetReco.Eta()) < 3.14 ) && jet_rawPt < 50.0){
-        
+        std::cout << "conditions for removing L1L2L3-L1 corrected jets satisfied " << std::endl;
         // Get the delta for removing L1L2L3-L1 corrected jets in the EE region from the default MET branch
         delta_x_T1Jet += (jet_pt_L1L2L3 - jet_pt_L1) * cos(origJetReco.Phi()) + jet_rawPt * cos(origJetReco.Phi());
         delta_y_T1Jet += (jet_pt_L1L2L3 - jet_pt_L1) * sin(origJetReco.Phi()) + jet_rawPt * sin(origJetReco.Phi());
@@ -1805,9 +1813,11 @@ void Analyzer::applyJetEnergyCorrections(Particle& jet, const CUTS eGenPos, cons
         // get the delta for removing raw jets in the EE region from the raw MET
         delta_x_rawJet += jet_rawPt * cos(origJetReco.Phi());
         delta_y_rawJet += jet_rawPt * sin(origJetReco.Phi());
-
       } 
     }
+
+    std::cout << "delta_x_T1Jet = " << delta_x_T1Jet << ", delta_y_T1Jet = " << delta_y_T1Jet << ", delta_x_rawJet = " << delta_x_rawJet << ", delta_y_rawJet = " << delta_y_rawJet << std::endl;
+
 
     // Apply jet energy scale corrections only to MC 
     
@@ -1839,19 +1849,19 @@ void Analyzer::applyJetEnergyCorrections(Particle& jet, const CUTS eGenPos, cons
       // Correct the jet 4-momentum according to the systematic applied for JES.
       systematics.shiftParticle(jet, origJetReco, jet_pt_jesShifted, jet_mass_jesShifted, systname, syst);
     }
-    /*
+    
     double jetTotalEmEF = _Jet->neutralEmEmEnergyFraction[i] + _Jet->chargedEmEnergyFraction[i];
     
     // Propagate this correction to the MET: nominal values.
     if(jet_pt_L1L2L3 > jetUnclEnThreshold && jetTotalEmEF < 0.9){
       if(!(year.compare("2017") == 0 && (abs(origJetReco.Eta()) > 2.65 && abs(origJetReco.Eta()) < 3.14 ) && jet_rawPt < 50.0)){
         if(isData || (!isData && !stats.bfind("SmearTheJet"))){
-          std::cout << "Nominal with first option" << std::endl;
+          // std::cout << "Nominal with first option" << std::endl;
           _MET->propagateJetEnergyCorr(origJetReco, jet_pt_L1L2L3, jet_pt_L1, systname, syst);
         }
         else{
           if(systname.find("orig") != std::string::npos && stats.bfind("SmearTheJet")){
-            std::cout << "Nominal with second option" << std::endl;
+            // std::cout << "Nominal with second option" << std::endl;
             _MET->propagateJetEnergyCorr(origJetReco, jet_pt_L1L2L3 * jer_sf_nom, jet_pt_L1, systname, syst);
           }
           else if(systname.find("_Res_") != std::string::npos){
@@ -1863,17 +1873,29 @@ void Analyzer::applyJetEnergyCorrections(Particle& jet, const CUTS eGenPos, cons
         }
       }
     }
-  */
+  
   }
 
-  /*
+  std::cout << "delta_x_T1Jet = " << delta_x_T1Jet << ", delta_y_T1Jet = " << delta_y_T1Jet << ", delta_x_rawJet = " << delta_x_rawJet << ", delta_y_rawJet = " << delta_y_rawJet << std::endl;
+  
+  // Propagate "unclustered energy" uncertainty to MET
+  if(year.compare("2017") == 0){
+    // Remove the L1L2L3-L1 corrected jets in the EE region from the default MET branch
+    _MET->propagateUnclEnergyUnctyEE(delta_x_T1Jet, delta_y_T1Jet, delta_x_rawJet, delta_y_rawJet, systname, syst);
+  }
+
+  if(!isData){
+    _MET->propagateUnclEnergyUncty(systname,syst);
+  }
+
+  
   for(size_t i=0; i < _Jet->size(); i++) {
     // std::cout << "Reco jet (after loop): pt = " << _Jet->RecoP4(i).Pt() << ", mass = " << _Jet->RecoP4(i).M() << ", eta = " << _Jet->RecoP4(i).Eta() << ", phi = " << _Jet->RecoP4(i).Phi() << std::endl; 
-    std::cout << "Jet (after JES): pt = " << _Jet->p4(i).Pt() << ", mass = " << _Jet->p4(i).M() << ", eta = " << _Jet->p4(i).Eta() << ", phi = " << _Jet->p4(i).Phi() << std::endl; 
+    std::cout << "Jet (after loop): pt = " << _Jet->p4(i).Pt() << ", mass = " << _Jet->p4(i).M() << ", eta = " << _Jet->p4(i).Eta() << ", phi = " << _Jet->p4(i).Phi() << std::endl; 
     //std::cout << "Reco jet (before loop): pt = " << _Jet->pt(i) << ", mass = " << _Jet->mass(i) << ", eta = " << _Jet->eta(i) << ", phi = " << _Jet->phi(i) << std::endl; 
   }
   std::cout << "--------" << std::endl;
-  */
+  
 
 }
 
