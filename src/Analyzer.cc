@@ -1577,7 +1577,7 @@ void Analyzer::setupJetCorrections(std::string year, std::string outputfilename)
 
   try{
     // Arguments: JetRecalibrator(const std::string path, const std::string globalTag, const std::string jetFlavor, const std::string type, bool doResidualJECs, int upToLevel=3, bool calculateSeparateCorrections=false, bool calculateTypeIMETCorr=false);
-    jetRecalib = JetRecalibrator((PUSPACE+"JetResDatabase/textFiles/").c_str(), jectag, "AK4PFchs", "Total", true); 
+    jetRecalib = JetRecalibrator((PUSPACE+"JetResDatabase/textFiles/").c_str(), jectag, "AK4PFchs", "Total", true, 3, false); 
     jetRecalibL1 = JetRecalibrator((PUSPACE+"JetResDatabase/textFiles/").c_str(), jectag, "AK4PFchs", "Total", false, 1, true); 
   }
   catch(std::runtime_error& err){
@@ -1673,10 +1673,11 @@ void Analyzer::applyJetEnergyCorrections(Particle& jet, const CUTS eGenPos, cons
     // Calculate the pt only for the L1 corrections since it will be used later.
     jet_pt_L1 = jetRecalibL1.correctedP4(origJetReco, jecL1, jet_RawFactor).Pt();
 
+    std::cout << "(Before muon subtraction) jet_pt_L1L2L3 = " << jet_pt_L1L2L3  << ", jet_pt_L1 = " << jet_pt_L1 << ", origJetReco.Eta() = " << origJetReco.Eta() << ", origJetReco.Phi() = " << origJetReco.Phi() << ", jet_rawPt = " << jet_rawPt << std::endl;
 
     // Check if this jet is used for type-I MET
     TLorentzVector newjetP4(0,0,0,0);
-    newjetP4.SetPtEtaPhiM(origJetReco.Pt() * (1.0 - jet_RawFactor), origJetReco.Eta(), origJetReco.Phi(), origJetReco.M());
+    newjetP4.SetPtEtaPhiM(origJetReco.Pt() * (1.0 - jet_RawFactor), origJetReco.Eta(), origJetReco.Phi(), origJetReco.M() * (1.0 - jet_RawFactor));
     double muon_pt = 0.0;
 
     if(_Jet->matchingMuonIdx1[i] > -1){
@@ -1799,7 +1800,7 @@ void Analyzer::applyJetEnergyCorrections(Particle& jet, const CUTS eGenPos, cons
     jet_pt_L1L2L3 = jet_pt_noMuL1L2L3 + muon_pt;
     jet_pt_L1 = jet_pt_noMuL1 + muon_pt;
 
-    std::cout << "jet_pt_L1L2L3 = " << jet_pt_L1L2L3  << ", jet_pt_L1 = " << jet_pt_L1 << ", origJetReco.Eta() = " << origJetReco.Eta() << ", origJetReco.Phi() = " << origJetReco.Phi() << ", jet_rawPt = " << jet_rawPt << std::endl;
+    std::cout << "(After muon subtraction) jet_pt_L1L2L3 = " << jet_pt_L1L2L3  << ", jet_pt_L1 = " << jet_pt_L1 << ", origJetReco.Eta() = " << origJetReco.Eta() << ", origJetReco.Phi() = " << origJetReco.Phi() << ", jet_rawPt = " << jet_rawPt << std::endl;
 
     if(year.compare("2017") == 0){
       std::cout << "This is 2017" << std::endl;
