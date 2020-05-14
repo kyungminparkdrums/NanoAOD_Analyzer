@@ -1671,9 +1671,10 @@ void Analyzer::applyJetEnergyCorrections(Particle& jet, const CUTS eGenPos, cons
     jet_Mass = jetRecalib.correctedP4(origJetReco, jec, jet_RawFactor).M();
     
     // Calculate the pt only for the L1 corrections since it will be used later.
+    // jet_pt_L1L2L3 = jetRecalibL1.correctedP4(origJetReco, jec, jet_RawFactor).Pt();
     jet_pt_L1 = jetRecalibL1.correctedP4(origJetReco, jecL1, jet_RawFactor).Pt();
 
-    std::cout << "(Before muon subtraction) jet_pt_L1L2L3 = " << jet_pt_L1L2L3  << ", jet_pt_L1 = " << jet_pt_L1 << ", origJetReco.Eta() = " << origJetReco.Eta() << ", origJetReco.Phi() = " << origJetReco.Phi() << ", jet_rawPt = " << jet_rawPt << std::endl;
+    std::cout << "(Before muon subtraction) jet_pt_L1L2L3 = " << jet_Pt  << ", jet_pt_L1 = " << jet_pt_L1 << ", origJetReco.Eta() = " << origJetReco.Eta() << ", origJetReco.Phi() = " << origJetReco.Phi() << ", jet_rawPt = " << jet_rawPt << std::endl;
 
     // Check if this jet is used for type-I MET
     TLorentzVector newjetP4(0,0,0,0);
