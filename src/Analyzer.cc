@@ -2528,7 +2528,7 @@ void Analyzer::getGoodRecoLeptons(const Lepton& lep, const CUTS ePos, const CUTS
   return;
 }
 
-bool Analyzer::passJetVetoEEnoise2017(int jet_index){
+bool Analyzer::passVetoEEnoise2017(int jet_index){
    // Get the jet pT and raw factors to calculate the raw jet pt:
    TLorentzVector jet_RecoP4 = _Jet->RecoP4(jet_index);
    double jet_rawFactor = _Jet->rawFactor[jet_index];
@@ -2571,7 +2571,7 @@ void Analyzer::getGoodRecoJets(CUTS ePos, const PartStats& stats, const int syst
 
     for( auto cut: stats.bset) {
       if(!passCuts) break;
-      else if(cut == "Apply2017EEnoiseVeto") passCuts = passCuts && passJetVetoEEnoise2017(i);
+      else if(cut == "Apply2017EEnoiseVeto") passCuts = passCuts && passVetoEEnoise2017(i);
     /// BJet specific
       // else if(cut == "ApplyJetBTagging") passCuts = passCuts && (_Jet->bDiscriminator[i] > stats.dmap.at("JetBTaggingCut")); // original	
       else if(cut == "ApplyJetBTaggingCSVv2") passCuts = passCuts && (_Jet->bDiscriminatorCSVv2[i] > stats.dmap.at("JetBTaggingCut")); 
@@ -2641,7 +2641,7 @@ void Analyzer::getGoodRecoBJets(CUTS ePos, const PartStats& stats, const int sys
 
     for( auto cut: stats.bset) {
       if(!passCuts) break;
-      else if(cut == "Apply2017EEnoiseVeto") passCuts = passCuts && passJetVetoEEnoise2017(i);
+      else if(cut == "Apply2017EEnoiseVeto") passCuts = passCuts && passVetoEEnoise2017(i);
       /// BJet specific
       //else if(cut == "ApplyJetBTagging") passCuts = passCuts && (_Jet->bDiscriminator[i] > stats.dmap.at("JetBTaggingCut")); //original
       else if(cut == "ApplyJetBTaggingCSVv2") passCuts = passCuts && (_Jet->bDiscriminatorCSVv2[i] > stats.dmap.at("JetBTaggingCut")); 
