@@ -3763,6 +3763,15 @@ void Analyzer::fill_Folder(std::string group, const int max, Histogramer &ihisto
         //histAddVal(_Tau->leadChargedCandDz_pv->at(it), "leadChargedCandDz");
       }
       if(part->type != PType::Jet) {
+        // calculate the Muon1MetMt before mu->nu emulation
+        double px = part->p4(it).Px() + _MET->JERCorrMet.Px();      
+        double py = part->p4(it).Py() + _MET->JERCorrMet.Py();      
+        double et = part->p4(it).Et() + _MET->JERCorrMet.E();
+        double mt2 = et*et - (px*px + py*py);
+        double metmtOriginal = (mt2 >= 0) ? sqrt(mt2) : -1;
+        
+        histAddVal(metmtOriginal, "MetMtOriginal");
+
         histAddVal(calculateLeptonMetMt(part->p4(it)), "MetMt");
       }
       if(part->type == PType::FatJet ) {
@@ -3876,6 +3885,7 @@ void Analyzer::fill_Folder(std::string group, const int max, Histogramer &ihisto
     double leaddijetdeltaR = 0;
     double leaddijetdeltaEta = 0;
     double etaproduct = 0;
+    double largestMassDeltaEta = 0; // added by Kyungmin
     for(auto it : *active_part->at(CUTS::eDiJet)) {
       int p1 = (it) / _Jet->size();
       int p2 = (it) % _Jet->size();
@@ -3886,6 +3896,7 @@ void Analyzer::fill_Folder(std::string group, const int max, Histogramer &ihisto
       if(DiJet.M() > leaddijetmass) {
         leaddijetmass = DiJet.M();
         etaproduct = (jet1.Eta() * jet2.Eta() > 0) ? 1 : -1;
+        largestMassDeltaEta = fabs(jet1.Eta() - jet2.Eta());
       }
       if(DiJet.Pt() > leaddijetpt) leaddijetpt = DiJet.Pt();
       if(fabs(jet1.Eta() - jet2.Eta()) > leaddijetdeltaEta) leaddijetdeltaEta = fabs(jet1.Eta() - jet2.Eta());
@@ -3904,6 +3915,7 @@ void Analyzer::fill_Folder(std::string group, const int max, Histogramer &ihisto
     histAddVal(leaddijetdeltaEta, "LargestDeltaEta");
     histAddVal(leaddijetdeltaR, "LargestDeltaR");
     histAddVal(etaproduct, "LargestMassEtaProduct");
+    histAddVal(largestMassDeltaEta, "LargestMassDeltaEta");
 
     for(auto index : *(active_part->at(CUTS::eRTau1)) ) {
       histAddVal2(calculateLeptonMetMt(_Tau->p4(index)), leaddijetmass, "mTvsLeadingMass");
