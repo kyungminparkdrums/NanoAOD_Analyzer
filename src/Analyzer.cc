@@ -3469,6 +3469,113 @@ double Analyzer::getWkfactor(){
 }
 
 
+double Analyzer::getZpTWeight() {
+  double zPtBoost = 1.;
+
+    //if((active_part->at(CUTS::eGElec)->size() + active_part->at(CUTS::eGTau)->size() + active_part->at(CUTS::eGMuon)->size()) >=1 && (active_part->at(CUTS::eGZ)->size() ==1 || active_part->at(CUTS::eGW)->size() ==1)){
+  if((active_part->at(CUTS::eGMuon)->size()) >=1 && (active_part->at(CUTS::eGZ)->size() ==1 || active_part->at(CUTS::eGW)->size() ==1)){
+      double zMass = 0;
+      double zPT = 0;
+
+     //std::cout << "# Gen Z " << active_part->at(CUTS::eGZ)->size() << std::endl;
+     //std::cout << "# Gen W " << active_part->at(CUTS::eGW)->size() << std::endl;
+
+      if(active_part->at(CUTS::eGZ)->size() ==1) {
+          zMass = _Gen->mass(active_part->at(CUTS::eGZ)->at(0));
+          zPT = _Gen->pt(active_part->at(CUTS::eGZ)->at(0));
+      }
+      if(active_part->at(CUTS::eGW)->size() ==1) {
+	  zMass = _Gen->mass(active_part->at(CUTS::eGW)->at(0));
+          zPT = _Gen->pt(active_part->at(CUTS::eGW)->at(0));
+      }
+
+    //std::cout << "Z mass " << zMass << std::endl;
+    //std::cout << "Z pT " << zPT << std::endl;
+
+    if(20 <= zMass && zMass < 60) {
+       if(20 <= zPT && zPT < 40) zPtBoost = 1.04;
+       else if(40 <= zPT && zPT < 60) zPtBoost = 1.12;
+       else if(60 <= zPT && zPT < 80) zPtBoost = 1.09;
+       else if(80 <= zPT && zPT < 100) zPtBoost = 1.09;
+       else if(100 <= zPT && zPT < 120) zPtBoost = 1.14;
+       else if(120 <= zPT && zPT < 140) zPtBoost = 1.29;
+       else if(140 <= zPT && zPT < 180) zPtBoost = 1.21;
+       else if(180 <= zPT && zPT < 220) zPtBoost = 1.47;
+       else if(220 <= zPT && zPT < 300) zPtBoost = 0.78;
+       else if(300 <= zPT && zPT < 10000) zPtBoost = 1.56;
+    }
+
+    else if(60 <= zMass && zMass < 120) {
+       if(20 <= zPT && zPT < 40) zPtBoost = 0.99;
+       else if(40 <= zPT && zPT < 60) zPtBoost = 1.05;
+       else if(60 <= zPT && zPT < 80) zPtBoost = 1.12;
+       else if(80 <= zPT && zPT < 100) zPtBoost = 1.16;
+       else if(100 <= zPT && zPT < 120) zPtBoost = 1.17;
+       else if(120 <= zPT && zPT < 140) zPtBoost = 1.17;
+       else if(140 <= zPT && zPT < 180) zPtBoost = 1.17;
+       else if(180 <= zPT && zPT < 220) zPtBoost = 1.18;
+       else if(220 <= zPT && zPT < 300) zPtBoost = 1.13;
+       else if(300 <= zPT && zPT < 10000) zPtBoost = 1.03;
+    }
+
+    else if(120 <= zMass && zMass < 160) {
+       if(20 <= zPT && zPT < 40) zPtBoost = 1.07;
+       else if(40 <= zPT && zPT < 60) zPtBoost = 1.13;
+       else if(60 <= zPT && zPT < 80) zPtBoost = 1.16;
+       else if(80 <= zPT && zPT < 100) zPtBoost = 1.21;
+       else if(100 <= zPT && zPT < 120) zPtBoost = 1.22;
+       else if(120 <= zPT && zPT < 140) zPtBoost = 1.27;
+       else if(140 <= zPT && zPT < 180) zPtBoost = 1.28;
+       else if(180 <= zPT && zPT < 220) zPtBoost = 1.17;
+       else if(220 <= zPT && zPT < 300) zPtBoost = 1.35;
+       else if(300 <= zPT && zPT < 10000) zPtBoost = 1.06;
+    }
+
+    else if(160 <= zMass && zMass < 200) {
+       if(20 <= zPT && zPT < 40) zPtBoost = 1.17;
+       else if(40 <= zPT && zPT < 60) zPtBoost = 1.15;
+       else if(60 <= zPT && zPT < 80) zPtBoost = 1.21;
+       else if(80 <= zPT && zPT < 100) zPtBoost = 1.09;
+       else if(100 <= zPT && zPT < 120) zPtBoost = 1.35;
+       else if(120 <= zPT && zPT < 140) zPtBoost = 1.21;
+       else if(140 <= zPT && zPT < 180) zPtBoost = 1.42;
+       else if(180 <= zPT && zPT < 220) zPtBoost = 1.43;
+       else if(220 <= zPT && zPT < 300) zPtBoost = 1.28;
+       else if(300 <= zPT && zPT < 10000) zPtBoost = 1.09;
+    }
+
+    else if(200 <= zMass && zMass < 240) {
+       if(20 <= zPT && zPT < 40) zPtBoost = 1.22;
+       else if(40 <= zPT && zPT < 60) zPtBoost = 1.21;
+       else if(60 <= zPT && zPT < 80) zPtBoost = 0.97;
+       else if(80 <= zPT && zPT < 100) zPtBoost = 1.42;
+       else if(100 <= zPT && zPT < 120) zPtBoost = 1.41;
+       else if(120 <= zPT && zPT < 140) zPtBoost = 1.17;
+       else if(140 <= zPT && zPT < 180) zPtBoost = 1.30;
+       else if(180 <= zPT && zPT < 220) zPtBoost = 1.21;
+       else if(220 <= zPT && zPT < 300) zPtBoost = 1.45;
+       else if(300 <= zPT && zPT < 10000) zPtBoost = 0.85;
+    }
+
+    else if(240 <= zMass && zMass < 10000) {
+       if(20 <= zPT && zPT < 40) zPtBoost = 1.24;
+       else if(40 <= zPT && zPT < 60) zPtBoost = 1.47;
+       else if(60 <= zPT && zPT < 80) zPtBoost = 1.26;
+       else if(80 <= zPT && zPT < 100) zPtBoost = 1.48;
+       else if(100 <= zPT && zPT < 120) zPtBoost = 1.61;
+       else if(120 <= zPT && zPT < 140) zPtBoost = 1.28;
+       else if(140 <= zPT && zPT < 180) zPtBoost = 1.44;
+       else if(180 <= zPT && zPT < 220) zPtBoost = 1.41;
+       else if(220 <= zPT && zPT < 300) zPtBoost = 1.47;
+       else if(300 <= zPT && zPT < 10000) zPtBoost = 0.92;
+    }
+
+  }
+
+    return zPtBoost;
+}
+
+
 ////Grabs a list of the groups of histograms to be filled and asked Fill_folder to fill up the histograms
 void Analyzer::fill_histogram(std::vector<std::string> infiles) {
   
@@ -3505,8 +3612,7 @@ void Analyzer::fill_histogram(std::vector<std::string> infiles) {
     // Z-pT correction
 
     if(distats["Run"].bfind("ApplyZpTSF") && isVSample) {
-        wgt *= -1.;
-        std::cout << "ISVSAMPLE " << isVSample << std::endl;
+        wgt *= getZpTWeight();             
     }
 
   }else  wgt=1.;
