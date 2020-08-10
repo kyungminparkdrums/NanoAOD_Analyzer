@@ -1493,6 +1493,9 @@ void Analyzer::initializeMCSelection(std::vector<std::string> infiles) {
     // check if we need to make gen level cuts to cross clean the samples:
 
   isVSample = false;
+
+  //std::cout << "INFILE[0] = " << infiles[0] << std::endl;
+
   if(infiles[0].find("DY") != std::string::npos){
     isVSample = true;
     if(infiles[0].find("DYJetsToLL_M-50_HT-") != std::string::npos){
@@ -1519,6 +1522,7 @@ void Analyzer::initializeMCSelection(std::vector<std::string> infiles) {
     gen_selection["DY_noMass_gt_200"]=false;
     gen_selection["DY_noMass_gt_100"]=false;
   }
+
 
   if(infiles[0].find("WJets") != std::string::npos){
     isVSample = true;
@@ -3466,7 +3470,7 @@ double Analyzer::getWkfactor(){
 
 
 ////Grabs a list of the groups of histograms to be filled and asked Fill_folder to fill up the histograms
-void Analyzer::fill_histogram() {
+void Analyzer::fill_histogram(std::vector<std::string> infiles) {
   
   if(!isData && distats["Run"].bfind("ApplyGenWeight") && gen_weight == 0.0) return;
 
@@ -3475,6 +3479,9 @@ void Analyzer::fill_histogram() {
   const std::vector<std::string>* groups = histo.get_groups();
 
   if(!isData){
+    //initializeMCSelection(infiles);
+    isVSample = (infiles[0].find("DY") != std::string::npos) || (infiles[0].find("WJets") != std::string::npos);    
+
     wgt = 1.;
     //wgt *= getTopBoostWeight(); //01.15.19
     if(distats["Run"].bfind("UsePileUpWeight")) wgt*= pu_weight;
@@ -3485,6 +3492,7 @@ void Analyzer::fill_histogram() {
     if(distats["Run"].bfind("ApplyZBoostSF") && isVSample){
       //wgt *= getZBoostWeight();
       wgt *= getZBoostWeightSyst(0);
+      //wgt *= -1;
       boosters[0] = getZBoostWeightSyst(0); //06.02.20                                                                                                                                                      
       boosters[1] = getZBoostWeightSyst(-1);  //06.02.20                                                                                                                                                    
       boosters[2] = getZBoostWeightSyst(1);  //06.02.20
@@ -3493,6 +3501,14 @@ void Analyzer::fill_histogram() {
       wgt *= getWkfactor();
     }
     wgt *= getBJetSF(CUTS::eRBJet, _Jet->pstats["BJet"]); //01.16.19
+
+    // Z-pT correction
+
+    if(distats["Run"].bfind("ApplyZpTSF") && isVSample) {
+        wgt *= -1.;
+        std::cout << "ISVSAMPLE " << isVSample << std::endl;
+    }
+
   }else  wgt=1.;
   //backup current weight
   backup_wgt=wgt;

@@ -71,7 +71,7 @@ public:
   void writeout();
   int nentries;
   void fill_efficiency();
-  void fill_histogram();
+  void fill_histogram(std::vector<std::string> infiles);
   void fill_Tree();
   void setControlRegions() { histo.setControlRegions();}
   void checkParticleDecayList(); //01.16.19
