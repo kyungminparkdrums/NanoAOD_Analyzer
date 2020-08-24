@@ -3599,7 +3599,6 @@ void Analyzer::fill_histogram(std::vector<std::string> infiles) {
     if(distats["Run"].bfind("ApplyZBoostSF") && isVSample){
       //wgt *= getZBoostWeight();
       wgt *= getZBoostWeightSyst(0);
-      //wgt *= -1;
       boosters[0] = getZBoostWeightSyst(0); //06.02.20                                                                                                                                                      
       boosters[1] = getZBoostWeightSyst(-1);  //06.02.20                                                                                                                                                    
       boosters[2] = getZBoostWeightSyst(1);  //06.02.20
@@ -3610,10 +3609,7 @@ void Analyzer::fill_histogram(std::vector<std::string> infiles) {
     wgt *= getBJetSF(CUTS::eRBJet, _Jet->pstats["BJet"]); //01.16.19
 
     // Z-pT correction
-
-    if(distats["Run"].bfind("ApplyZpTSF") && isVSample) {
-        wgt *= getZpTWeight();             
-    }
+    if(distats["Run"].bfind("ApplyZpTSF") && isVSample) wgt *= getZpTWeight();             
 
   }else  wgt=1.;
   //backup current weight
@@ -4179,6 +4175,9 @@ void Analyzer::fill_Folder(std::string group, const int max, Histogramer &ihisto
 
       double ptSum = part1.Pt() + part2.Pt();
       histAddVal(ptSum, "SumOfPt");
+
+      // dilepton pT
+      histAddVal( (part1+part2).Pt(), "Pt");
 
       double PZeta = getPZeta(part1,part2).first;
       double PZetaVis = getPZeta(part1,part2).second;
