@@ -3491,6 +3491,26 @@ double Analyzer::getZpTWeight() {
     //std::cout << "Z mass " << zMass << std::endl;
     //std::cout << "Z pT " << zPT << std::endl;
 
+    // Correction factors derived from 0-lepton channel Zjets CR (2018)
+    if (0 <= zPT && zPT < 20) zPtBoost = 0.94;
+    else if(20 <= zPT && zPT < 40) zPtBoost = 1.21;
+    else if(40 <= zPT && zPT < 60) zPtBoost = 1.20;
+    else if(60 <= zPT && zPT < 80) zPtBoost = 1.18;
+    else if(80 <= zPT && zPT < 100) zPtBoost = 1.14;
+    else if(100 <= zPT && zPT < 120) zPtBoost = 1.05;
+    else if(120 <= zPT && zPT < 140) zPtBoost = 1.01;
+    else if(140 <= zPT && zPT < 160) zPtBoost = 0.99;
+    else if(160 <= zPT && zPT < 180) zPtBoost = 0.97;
+    else if(180 <= zPT && zPT < 200) zPtBoost = 0.94;
+    else if(200 <= zPT && zPT < 220) zPtBoost = 0.91;
+    else if(220 <= zPT && zPT < 240) zPtBoost = 0.91;
+    else if(240 <= zPT && zPT < 260) zPtBoost = 0.87;
+    else if(260 <= zPT && zPT < 280) zPtBoost = 0.87;
+    else if(280 <= zPT && zPT < 300) zPtBoost = 0.86;
+    else if(300 <= zPT && zPT < 5000) zPtBoost = 0.84; 
+
+    // Correction factors from SUSY (AN2015_267_v10)
+    /*
     if(20 <= zMass && zMass < 60) {
        if(20 <= zPT && zPT < 40) zPtBoost = 1.04;
        else if(40 <= zPT && zPT < 60) zPtBoost = 1.12;
@@ -3568,7 +3588,7 @@ double Analyzer::getZpTWeight() {
        else if(220 <= zPT && zPT < 300) zPtBoost = 1.47;
        else if(300 <= zPT && zPT < 10000) zPtBoost = 0.92;
     }
-
+   */
   }
 
     return zPtBoost;
