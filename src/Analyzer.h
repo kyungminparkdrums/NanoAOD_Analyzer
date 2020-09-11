@@ -171,6 +171,9 @@ public:
   bool select_mc_background();
   double getTauDataMCScaleFactor(int updown);
   double getWkfactor();
+
+  double getZpTWeight();  // Z-pT correction
+
   double getZBoostWeight();
   double getZBoostWeightSyst(int ud); // 06.02.20
   double getTopBoostWeight(); //01.15.19
