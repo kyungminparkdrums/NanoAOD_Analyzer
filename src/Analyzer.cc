@@ -72,7 +72,8 @@ const std::unordered_map<std::string, CUTS> Analyzer::cut_num = {
   {"NElectron1Jet1Combinations", CUTS::eElec1Jet1},     {"NElectron1Jet2Combinations", CUTS::eElec1Jet2},
   {"NElectron2Jet1Combinations", CUTS::eElec2Jet1},     {"NElectron2Jet2Combinations", CUTS::eElec2Jet2},
   {"NLeadJetCombinations", CUTS::eSusyCom},             {"METCut", CUTS::eMET},
-  {"NRecoWJet", CUTS::eRWjet},                          {"NRecoVertex", CUTS::eRVertex}
+  {"NRecoWJet", CUTS::eRWjet},                          {"NRecoVertex", CUTS::eRVertex},
+  {"QCDRejection", CUTS::eQCDRejection}
 };
 
 const std::map<PType, float> leptonmasses = {
@@ -906,6 +907,10 @@ void Analyzer::getGoodParticles(int syst){
   ////Dijet cuts
   getGoodDiJets(distats["DiJet"],syst);
 
+  if (distats["Run"].bfind("QCDRejectionByDphi")) { 
+    rejectQCD(CUTS::eQCDRejection, _Jet->pstats["Jet1"], syst);
+    rejectQCD(CUTS::eQCDRejection, _Jet->pstats["Jet2"], syst);
+  }
 }
 
 
@@ -2598,7 +2603,7 @@ void Analyzer::getGoodRecoJets(CUTS ePos, const PartStats& stats, const int syst
       else if(cut == "RemoveOverlapWithElectron2s") passCuts = passCuts && !isOverlaping(lvec, *_Electron, CUTS::eRElec2, stats.dmap.at("Electron2MatchingDeltaR"));
       else if(cut == "RemoveOverlapWithTau1s") passCuts = passCuts && !isOverlaping(lvec, *_Tau, CUTS::eRTau1, stats.dmap.at("Tau1MatchingDeltaR"));
       else if (cut =="RemoveOverlapWithTau2s") passCuts = passCuts && !isOverlaping(lvec, *_Tau, CUTS::eRTau2, stats.dmap.at("Tau2MatchingDeltaR"));
-      else if(cut == "DiscrByDphi1") passCuts = passCuts && passCutRange(fabs(dphi1rjets), stats.pmap.at("Dphi1CutMet")); //01.17.19
+      //else if(cut == "DiscrByDphi1") passCuts = passCuts && passCutRange(fabs(dphi1rjets), stats.pmap.at("Dphi1CutMet")); //01.17.19
       else if(cut == "UseBtagSF") {
         //double bjet_SF = reader.eval_auto_bounds("central", BTagEntry::FLAV_B, lvec.Eta(), lvec.Pt());
         //passCuts = passCuts && (isData || ((double) rand()/(RAND_MAX)) <  bjet_SF);
@@ -3002,6 +3007,40 @@ void Analyzer::VBFTopologyCut(const PartStats& stats, const int syst) {
   if(passCuts)  active_part->at(CUTS::eSusyCom)->push_back(0);
   return;
 }
+
+
+// QCD rejection criterion: any event including any jet whose abs(delta phi (j, MET)) <= 0.5 should be vetoed
+// we require all jets to pass the cut of abs(dPhi(j,MET)) > 0.5
+void Analyzer::rejectQCD(CUTS eQCDRejection, const PartStats& stats, const int syst) {
+  if(! neededCuts.isPresent(eQCDRejection)) return;
+
+  std::string systname = syst_names.at(syst);
+  if(!_Jet->needSyst(syst)) {
+    active_part->at(eQCDRejection)=goodParts[eQCDRejection];
+    return;
+  }
+
+  int i=0;
+
+  bool passCuts = true;
+  // if ANY of the jets don't satisfy abs(dPhi(j,MET)) > 0.5, events don't pass the cut
+  for(auto lvec: *_Jet) {
+    double dphi1rjets = normPhi(lvec.Phi() - _MET->phi());
+    for( auto cut: stats.bset) {
+      if(!passCuts) break;
+      else if(cut == "DiscrByDphi1") passCuts = passCuts && passCutRange(fabs(dphi1rjets), stats.pmap.at("Dphi1CutMet")); //01.17.19
+    }
+   
+    std::cout << "i " << i << ", MetDphi " << dphi1rjets << ", passCuts " << passCuts << std::endl; 
+
+    i++;
+  }
+  //if(syst==0)  active_part->at(CUTS::eQCDRejection)->push_back(1);
+  //else   syst_parts.at(syst).at(CUTS::eQCDRejection)->push_back(1);
+  if(passCuts) active_part->at(eQCDRejection)->push_back(1);
+}
+
+
 
 bool Analyzer::passCutRange(double value, const std::pair<double, double>& cuts) {
   return (value > cuts.first && value < cuts.second);
@@ -3491,6 +3530,7 @@ double Analyzer::getZpTWeight() {
     //std::cout << "Z mass " << zMass << std::endl;
     //std::cout << "Z pT " << zPT << std::endl;
 
+/*
     // Correction factors derived from 0-lepton channel Zjets CR (2018)
     if (0 <= zPT && zPT < 20) zPtBoost = 0.94;
     else if(20 <= zPT && zPT < 40) zPtBoost = 1.21;
@@ -3508,9 +3548,9 @@ double Analyzer::getZpTWeight() {
     else if(260 <= zPT && zPT < 280) zPtBoost = 0.87;
     else if(280 <= zPT && zPT < 300) zPtBoost = 0.86;
     else if(300 <= zPT && zPT < 5000) zPtBoost = 0.84; 
-
+*/
     // Correction factors from SUSY (AN2015_267_v10)
-    /*
+    
     if(20 <= zMass && zMass < 60) {
        if(20 <= zPT && zPT < 40) zPtBoost = 1.04;
        else if(40 <= zPT && zPT < 60) zPtBoost = 1.12;
@@ -3588,7 +3628,7 @@ double Analyzer::getZpTWeight() {
        else if(220 <= zPT && zPT < 300) zPtBoost = 1.47;
        else if(300 <= zPT && zPT < 10000) zPtBoost = 0.92;
     }
-   */
+   
   }
 
     return zPtBoost;
@@ -3875,6 +3915,7 @@ void Analyzer::fill_Folder(std::string group, const int max, Histogramer &ihisto
       histAddVal(part->p4(it).Eta(), "Eta");
       histAddVal(part->p4(it).Phi(), "Phi");
       histAddVal(part->p4(it).DeltaPhi(_MET->p4()), "MetDphi");
+
       if(part->type == PType::Tau) {
         //if(_Tau->nProngs->at(it) == 1){
           //histAddVal(part->pt(it), "Pt_1prong");
@@ -4023,6 +4064,8 @@ void Analyzer::fill_Folder(std::string group, const int max, Histogramer &ihisto
     double leaddijetdeltaEta = 0;
     double etaproduct = 0;
     double largestMassDeltaEta = 0; // added by Kyungmin
+    double minDphiMetJet = 10.;
+
     for(auto it : *active_part->at(CUTS::eDiJet)) {
       int p1 = (it) / _Jet->size();
       int p2 = (it) % _Jet->size();
@@ -4046,6 +4089,18 @@ void Analyzer::fill_Folder(std::string group, const int max, Histogramer &ihisto
       histAddVal(jet1.DeltaR(jet2), "DeltaR");
     }
 
+    for(auto it : *active_part->at(CUTS::eQCDRejection)) {
+      int p1 = (it) / _Jet->size();
+      int p2 = (it) % _Jet->size();
+      TLorentzVector jet1 = _Jet->p4(p1);
+      TLorentzVector jet2 = _Jet->p4(p2);
+ 
+      // |min_dPhi(MET,j)| histogram (messy variable names ..)
+      double minDphi_tmp = ( absnormPhi(jet1.Phi() - _MET->phi()) < absnormPhi(jet2.Phi() - _MET->phi()) ) ? normPhi(jet1.Phi() - _MET->phi()) : normPhi(jet2.Phi() - _MET->phi());
+      minDphiMetJet = ( fabs(minDphi_tmp) <= fabs(minDphiMetJet) ) ? minDphi_tmp : minDphiMetJet; 
+    }
+
+    histAddVal(minDphiMetJet, "minDphiMet"); 
 
     histAddVal(leaddijetmass, "LargestMass");
     histAddVal(leaddijetpt, "LargestPt");

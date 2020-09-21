@@ -154,6 +154,8 @@ public:
   void fastTriggerCuts(CUTS);
   void TriggerCuts(CUTS);
 
+  void rejectQCD(CUTS, const PartStats&, const int);
+
   inline bool passCutRangeAbs(std::string, double, const PartStats&);
   bool passCutRangeAbs(double, const std::pair<double, double>&);
 
