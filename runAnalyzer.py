@@ -21,7 +21,8 @@ configDic = {'PartDet':partDetDir+'signal', 'year': 2016}
 
 datafile = sys.argv[1]
 configDic['datafile'] = datafile
-configDic['outname'] = datafile.split('/')[5] + '.root'
+#configDic['outname'] = datafile.split('/')[5] + '.root'
+configDic['outname'] = 'test.root'
 
 # Get PartDets
 if 'data' in datafile:
