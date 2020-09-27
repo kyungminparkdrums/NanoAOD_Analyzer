@@ -71,7 +71,7 @@ public:
   void writeout();
   int nentries;
   void fill_efficiency();
-  void fill_histogram(std::vector<std::string> infiles);
+  void fill_histogram(std::vector<std::string> infiles, std::string);
   void fill_Tree();
   void setControlRegions() { histo.setControlRegions();}
   void checkParticleDecayList(); //01.16.19
@@ -174,7 +174,7 @@ public:
   double getTauDataMCScaleFactor(int updown);
   double getWkfactor();
 
-  double getZpTWeight();  // Z-pT correction
+  double getZpTWeight(std::string);  // Z-pT correction
 
   double getZBoostWeight();
   double getZBoostWeightSyst(int ud); // 06.02.20

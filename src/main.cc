@@ -153,7 +153,7 @@ int main (int argc, char* argv[]) {
     //if (i < 25)
     //{testing.writeParticleDecayList(i);}  //01.16.19:  This will write the particle decay list for the first 25 events.
 
-    testing.fill_histogram(inputnames);
+    testing.fill_histogram(inputnames, year);
     
     //spechialAna.analyze();                // Special analyzer
     

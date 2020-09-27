@@ -3031,7 +3031,7 @@ void Analyzer::rejectQCD(CUTS eQCDRejection, const PartStats& stats, const int s
       else if(cut == "DiscrByDphi1") passCuts = passCuts && passCutRange(fabs(dphi1rjets), stats.pmap.at("Dphi1CutMet")); //01.17.19
     }
    
-    std::cout << "i " << i << ", MetDphi " << dphi1rjets << ", passCuts " << passCuts << std::endl; 
+    //std::cout << "i " << i << ", MetDphi " << dphi1rjets << ", passCuts " << passCuts << std::endl; 
 
     i++;
   }
@@ -3508,7 +3508,7 @@ double Analyzer::getWkfactor(){
 }
 
 
-double Analyzer::getZpTWeight() {
+double Analyzer::getZpTWeight(std::string year) {
     double zPtBoost = 1.;
 
     if((active_part->at(CUTS::eGElec)->size() + active_part->at(CUTS::eGTau)->size() + active_part->at(CUTS::eGMuon)->size()) >=1 && (active_part->at(CUTS::eGZ)->size() ==1 || active_part->at(CUTS::eGW)->size() ==1)){
@@ -3530,27 +3530,51 @@ double Analyzer::getZpTWeight() {
     //std::cout << "Z mass " << zMass << std::endl;
     //std::cout << "Z pT " << zPT << std::endl;
 
-/*
-    // Correction factors derived from 0-lepton channel Zjets CR (2018)
-    if (0 <= zPT && zPT < 20) zPtBoost = 0.94;
-    else if(20 <= zPT && zPT < 40) zPtBoost = 1.21;
-    else if(40 <= zPT && zPT < 60) zPtBoost = 1.20;
-    else if(60 <= zPT && zPT < 80) zPtBoost = 1.18;
-    else if(80 <= zPT && zPT < 100) zPtBoost = 1.14;
-    else if(100 <= zPT && zPT < 120) zPtBoost = 1.05;
-    else if(120 <= zPT && zPT < 140) zPtBoost = 1.01;
-    else if(140 <= zPT && zPT < 160) zPtBoost = 0.99;
-    else if(160 <= zPT && zPT < 180) zPtBoost = 0.97;
-    else if(180 <= zPT && zPT < 200) zPtBoost = 0.94;
-    else if(200 <= zPT && zPT < 220) zPtBoost = 0.91;
-    else if(220 <= zPT && zPT < 240) zPtBoost = 0.91;
-    else if(240 <= zPT && zPT < 260) zPtBoost = 0.87;
-    else if(260 <= zPT && zPT < 280) zPtBoost = 0.87;
-    else if(280 <= zPT && zPT < 300) zPtBoost = 0.86;
-    else if(300 <= zPT && zPT < 5000) zPtBoost = 0.84; 
-*/
-    // Correction factors from SUSY (AN2015_267_v10)
-    
+    // for 2017 and 2018
+    if (year.compare("2016") != 0) {
+      // Correction factors derived from 0-lepton channel Zjets CR (average of 2017 and 2018)
+      if (0 <= zPT && zPT < 20) zPtBoost = 0.94;
+      else if(20 <= zPT && zPT < 40) zPtBoost = 1.21;
+      else if(40 <= zPT && zPT < 60) zPtBoost = 1.20;
+      else if(60 <= zPT && zPT < 80) zPtBoost = 1.19;
+      else if(80 <= zPT && zPT < 100) zPtBoost = 1.14;
+      else if(100 <= zPT && zPT < 120) zPtBoost = 1.05;
+      else if(120 <= zPT && zPT < 140) zPtBoost = 1.01;
+      else if(140 <= zPT && zPT < 160) zPtBoost = 0.99;
+      else if(160 <= zPT && zPT < 180) zPtBoost = 0.96;
+      else if(180 <= zPT && zPT < 200) zPtBoost = 0.94;
+      else if(200 <= zPT && zPT < 220) zPtBoost = 0.90;
+      else if(220 <= zPT && zPT < 240) zPtBoost = 0.89;
+      else if(240 <= zPT && zPT < 260) zPtBoost = 0.86;
+      else if(260 <= zPT && zPT < 280) zPtBoost = 0.86;
+      else if(280 <= zPT && zPT < 300) zPtBoost = 0.84;
+      else if(300 <= zPT && zPT < 5000) zPtBoost = 0.83; 
+    }
+    // for 2016
+    else {
+      // Correction factors derived from 0-lepton channel Zjets CR (2016)
+      if (0 <= zPT && zPT < 20) zPtBoost = 1.00;
+      else if(20 <= zPT && zPT < 40) zPtBoost = 0.98;
+      else if(40 <= zPT && zPT < 60) zPtBoost = 1.02;
+      else if(60 <= zPT && zPT < 80) zPtBoost = 1.06;
+      else if(80 <= zPT && zPT < 100) zPtBoost = 1.05;
+      else if(100 <= zPT && zPT < 120) zPtBoost = 1.01;
+      else if(120 <= zPT && zPT < 140) zPtBoost = 0.99;
+      else if(140 <= zPT && zPT < 160) zPtBoost = 0.98;
+      else if(160 <= zPT && zPT < 180) zPtBoost = 0.96;
+      else if(180 <= zPT && zPT < 200) zPtBoost = 0.93;
+      else if(200 <= zPT && zPT < 220) zPtBoost = 0.92;
+      else if(220 <= zPT && zPT < 240) zPtBoost = 0.86;
+      else if(240 <= zPT && zPT < 260) zPtBoost = 0.87;
+      else if(260 <= zPT && zPT < 280) zPtBoost = 0.85;
+      else if(280 <= zPT && zPT < 300) zPtBoost = 0.86;
+      else if(300 <= zPT && zPT < 5000) zPtBoost = 0.88; 
+    }
+
+    std::cout << "Year " << year << ", Z pT " << zPT << ", Z boost " << zPtBoost << std::endl;
+
+    // Correction factors from SUSY (AN2015_267_v10)   
+    /* 
     if(20 <= zMass && zMass < 60) {
        if(20 <= zPT && zPT < 40) zPtBoost = 1.04;
        else if(40 <= zPT && zPT < 60) zPtBoost = 1.12;
@@ -3628,7 +3652,7 @@ double Analyzer::getZpTWeight() {
        else if(220 <= zPT && zPT < 300) zPtBoost = 1.47;
        else if(300 <= zPT && zPT < 10000) zPtBoost = 0.92;
     }
-   
+  */   
   }
 
     return zPtBoost;
@@ -3636,7 +3660,7 @@ double Analyzer::getZpTWeight() {
 
 
 ////Grabs a list of the groups of histograms to be filled and asked Fill_folder to fill up the histograms
-void Analyzer::fill_histogram(std::vector<std::string> infiles) {
+void Analyzer::fill_histogram(std::vector<std::string> infiles, std::string year) {
   
   if(!isData && distats["Run"].bfind("ApplyGenWeight") && gen_weight == 0.0) return;
 
@@ -3668,7 +3692,7 @@ void Analyzer::fill_histogram(std::vector<std::string> infiles) {
     wgt *= getBJetSF(CUTS::eRBJet, _Jet->pstats["BJet"]); //01.16.19
 
     // Z-pT correction
-    if(distats["Run"].bfind("ApplyZpTSF") && isVSample) wgt *= getZpTWeight();             
+    if(distats["Run"].bfind("ApplyZpTSF") && isVSample) wgt *= getZpTWeight(year);             
 
   }else  wgt=1.;
   //backup current weight
@@ -4251,7 +4275,8 @@ void Analyzer::fill_Folder(std::string group, const int max, Histogramer &ihisto
       histAddVal(ptSum, "SumOfPt");
 
       // dilepton pT
-      histAddVal( (part1+part2).Pt(), "Pt");
+      double dilepPt = (part1+part2).Pt();
+      histAddVal( dilepPt, "Pt");
 
       double PZeta = getPZeta(part1,part2).first;
       double PZetaVis = getPZeta(part1,part2).second;
