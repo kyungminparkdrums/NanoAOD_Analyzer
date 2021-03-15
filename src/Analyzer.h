@@ -29,6 +29,7 @@ struct CRTester;
 
 /////fix
 #include "./btagging/BTagCalibrationStandalone.h"
+#include "TauIDSFTool.h"
 
 #include "Cut_enum.h"
 #include "FillInfo.h"
@@ -37,6 +38,7 @@ struct CRTester;
 #include "DepGraph.h"
 #include "JetScaleResolution.h"
 #include "JetRecalibrator.h"
+#include "L1ECALPrefiringWgtProd.h"
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -71,8 +73,8 @@ public:
   void writeout();
   int nentries;
   void fill_efficiency();
-  void fill_histogram(std::vector<std::string> infiles, std::string);
-  void fill_Tree();
+  void fill_histogram(std::string);
+  // void fill_Tree();
   void setControlRegions() { histo.setControlRegions();}
   void checkParticleDecayList(); //01.16.19
   /*----------- ReadinJSON class variables -------------*/
@@ -109,7 +111,7 @@ public:
   void read_info(std::string);
   void setupGeneral(std::string);
   void setupEventGeneral(int);
-  void getTriggerBranchesList(std::string, bool);
+  void getTriggerBranchesList(CUTS, std::string, bool);
   bool passGenHTFilter(float);
   bool passGenMassFilterZ(float mass_lowbound, float mass_upbound);
   bool checkGoodRunsAndLumis(int);
@@ -120,7 +122,12 @@ public:
   bool passHEMveto2018();
   bool passJetVetoEEnoise2017(int);
 
+  bool skimSignalMC(int);
+  std::string inputSignalModel="", inputSignalMassParam="";
+  bool finalInputSignal = false;
+
   void smearLepton(Lepton&, CUTS, const PartStats&, const PartStats&, int syst=0);
+  void smearTaus(Lepton&, const PartStats&, const PartStats&, int syst=0);
   //void smearJet(Particle&, CUTS, const PartStats&, int syst=0);
   void smearJetRes(Particle&, CUTS, const PartStats&, int syst=0);
 
@@ -142,6 +149,7 @@ public:
   void getGoodGen(const PartStats&);
   void getGoodRecoLeptons(const Lepton&, const CUTS, const CUTS, const PartStats&, const int);
   void getGoodRecoJets(CUTS, const PartStats&, const int);
+  void getGoodRecoLeadJets(CUTS, const PartStats&, const int); 
   void getGoodRecoBJets(CUTS, const PartStats&, const int); //01.16.19
   void getGoodRecoFatJets(CUTS, const PartStats&, const int);
 
@@ -154,7 +162,7 @@ public:
   void fastTriggerCuts(CUTS);
   void TriggerCuts(CUTS);
 
-  void rejectQCD(CUTS, const PartStats&, const int);
+  void rejectQCD(CUTS, const PartStats&, const PartStats&, const int);
 
   inline bool passCutRangeAbs(std::string, double, const PartStats&);
   bool passCutRangeAbs(double, const std::pair<double, double>&);
@@ -171,12 +179,11 @@ public:
   bool isInTheCracks(float);
   bool passedLooseJetID(int);
   bool select_mc_background();
-  double getTauDataMCScaleFactor(int updown);
+  double getTauIdSFs(bool, bool, bool, bool, std::string);
   double getWkfactor();
-
-  double getZpTWeight(std::string);  // Z-pT correction
-
   double getZBoostWeight();
+  double getZpTWeight();
+  double getZpTWeight_vbfSusy(std::string);
   double getZBoostWeightSyst(int ud); // 06.02.20
   double getTopBoostWeight(); //01.15.19
   void setupBJetSFInfo(const PartStats&, std::string); // new function that sets up the b-tagging SF info
@@ -189,6 +196,9 @@ public:
   void setupJetCorrections(std::string, std::string);
   void getJetEnergyResSFs(Particle& jet, const CUTS eGenPos);
   void applyJetEnergyCorrections(Particle&, CUTS, const PartStats&, std::string, int syst=0);
+
+  void setupTauIDSFsInfo(std::string, std::string, bool, bool);
+  void setupTauResSFsInfo(bool);
 
   inline bool passCutRange(std::string, double, const PartStats&);
   bool passCutRange(double, const std::pair<double, double>&);
@@ -209,11 +219,11 @@ public:
   TChain* BOOM;
   TTree* BAAM;
   TFile* infoFile;
-  TFile* routfile;
+  TFile* routfile = new TFile;
   std::string filespace = "";
-  double hPU[200] = { };        // initialize this array to zero.
-  double hPU_up[200] = { };     // initialize this array to zero.
-  double hPU_down[200] = { };   // initialize this array to zero.
+  float hPU[200] = { };        // initialize this array to zero.
+  float hPU_up[200] = { };     // initialize this array to zero.
+  float hPU_down[200] = { };   // initialize this array to zero.
   int version=0;
   std::map<std::string,TTree* > originalTrees;
   //std::map<std::string,*TObject> otherObjects;
@@ -228,6 +238,7 @@ public:
   Jet* _Jet;
   FatJet* _FatJet;
   Met* _MET;
+  Photon* _Photon;
   Histogramer histo;
   Histogramer syst_histo;
   std::unordered_map<CUTS, std::vector<int>*, EnumHash>* active_part;
@@ -269,21 +280,23 @@ public:
 
   std::vector<int>* trigPlace[nTrigReq];
   bool setTrigger = false;
-  std::vector<std::string> triggerBranchesList;
+  std::vector<std::string> trigger1BranchesList, trigger2BranchesList;
   bool triggerDecision = false;
-  std::vector<std::string> inputTriggerNames; // Brenda: This will take the triggers from the configuration file Run_info.in
-  std::vector<bool> triggernamedecisions; // Brenda
+  std::vector<std::string> inputTrigger1Names, inputTrigger2Names; // Brenda: This will take the triggers from the configuration file Run_info.in
+  std::vector<bool> trigger1namedecisions, trigger2namedecisions; // Brenda
   std::vector<int> cuts_per, cuts_cumul;
 
-  std::unordered_map< std::string,float > zBoostTree;
+  std::vector<std::pair<double, int> > jetPtIndexVector;
+
+  // std::unordered_map< std::string,float > zBoostTree;
 
   double maxIso, minIso;
   int leadIndex, maxCut, crbins=1;
-  bool isData, CalculatePUSystematics, doSystematics;
+  bool isData, isSignalMC, CalculatePUSystematics, doSystematics;
 
   float nTruePU = 0;
   int bestVertices = 0;
-  float gen_weight = 0;
+  float gen_weight = 0; 
   float generatorht = 0;
   float gendilepmass = 0;
 
@@ -298,9 +311,6 @@ public:
   bool ecalbadcalibrationfilter = false;
   bool allmetfilters = false;
   bool passedmetfilters = false;
-
-  //BTagCalibration calib = BTagCalibration("csvv1", "Pileup/btagging.csv");
-  //BTagCalibrationReader reader = BTagCalibrationReader(BTagEntry::OP_TIGHT, "central");
   
   // B-tagging scale factors - calibration + readers
   BTagCalibration btagcalib;
@@ -308,6 +318,23 @@ public:
   BTagEntry::JetFlavor bjetflavor;
   BTagEntry::OperatingPoint b_workingpoint;
 
+  // Tau ID SFs 
+  TauIDSFTool tau1idSFs, tau2idSFs;
+  TauIDSFTool tau1id_antiEleSFs, tau2id_antiEleSFs;
+  TauIDSFTool tau1id_antiMuSFs, tau2id_antiMuSFs;
+  TauESTool tauesSFs;
+  TauFESTool taufesSFs;
+  std::string tauidyear;
+  std::map<int, std::string> tauidwpsmap;
+  std::map<int, std::string> antielewpsmap;
+  std::map<int, std::string> antimuwpsmap;
+  std::string tauid_algo, antiele_algo, antimu_algo;
+  int tauidwp, antielewp, antimuwp;
+  bool failtau1iso = false, failtau2iso = false;
+
+  // Prefiring weights
+  float l1prefiringwgt = 1.0, l1prefiringwgt_up = 1.0, l1prefiringwgt_dn = 1.0;
+  
   Float_t jec_rho =20.;
   std::vector< std::vector<float> > jets_jer_sfs;
 

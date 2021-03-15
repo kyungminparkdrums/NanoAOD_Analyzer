@@ -33,6 +33,7 @@ FillGen 1
 PUNTrueInt    99 0. 99. // nTruePU - change the number of bins accordingly for each year's datatset
 GenHT       4000 0. 4000.
 GenWeight  10000 -50000. 50000. 
+PrefiringWeight  100  0.  1.0
 
 GenVisHadTauPt 				100   0.     250.
 GenVisHadTauEta 			72  -3.6      +3.6
@@ -63,6 +64,10 @@ GenMuonEta         72  -3.6      +3.6
 GenMuonPhi         36  -3.15     +3.15
 GenDiTauMass      100   0.    10000.
 GenZDiLepMass	  1000	0.	 5000.
+GenZMass          1000   0.      5000.
+GenWMass          1000   0.      5000.
+NGenZ              10.   0.      10.
+NGenW              10.   0.      10.
 //GenHadTauFrac_scalar	  100	0.    1.
 //GenHadTauFrac_vector	  100	0.    1.
 //GenDeltaR		  100	0.    10.
@@ -104,7 +109,7 @@ Tau2MetMt		 200 0.	       1000.
 
 //------------------------------------------------//
 
-FillElectron1 0
+FillElectron1 1
 
 NElectron1                   20   0.      20.
 Electron1Energy            2000   0.    5000.
@@ -115,7 +120,7 @@ FirstLeadingElectron1Eta    144  -7.2     +7.2
 Electron1Phi                 36  -3.15    +3.15
 Electron1MetMt              100   0      500
 
-FillElectron2 0
+FillElectron2 1
 
 NElectron2                   20   0.      20.
 Electron2Energy            2000   0.    5000.
@@ -140,8 +145,9 @@ FirstLeadingMuon1Pt     400   0.    1000.
 FirstLeadingMuon1Eta    144  -7.2     +7.2
 Muon1Phi                 36  -3.15    +3.15
 Muon1MetMt              100   0      500
+Muon1MetMtOriginal      100   0      500
 
-FillMuon2 0
+FillMuon2 1
 
 NMuon2                   20   0.      20.
 Muon2Energy            2000   0.    5000.
@@ -161,6 +167,9 @@ Jet1Energy   200   0.   500.
 Jet1Pt       200   0.   500.
 Jet1Eta      100  -5.0   +5.0
 Jet1Phi      144  -6.3   +6.3
+Jet1DPhiMet       126  -6.3    +6.3
+Jet1AbsDPhiMet    126   0.0    +6.3
+Jet1MinAbsDPhiMet  126   0.0    +6.3
 
 FillJet2 1
 
@@ -169,6 +178,9 @@ Jet2Energy   200   0.   500.
 Jet2Pt       200   0.   500.
 Jet2Eta      100  -5.0   +5.0
 Jet2Phi      144  -6.3   +6.3
+Jet2DPhiMet       126  -6.3  +6.3
+Jet2AbsDPhiMet    126   0.0  +6.3
+Jet2MinAbsDPhiMet 126   0.0  +6.3
 
 FillBJet 1
 
@@ -178,14 +190,14 @@ BJetPt       200   0.    500.
 BJetEta       72  -3.6    +3.6
 BJetPhi       36  -3.15   +3.15
 
-FillCentralJet 0
+FillCentralJet 1
 
 NCentralJet      20   0.    20.
 CentralJetPt    200   0.   500.
 CentralJetEta   100  -5.0   +5.0
 
 
-FillWJet 1
+FillWJet 0
 
 NWJet      20   0.    20.
 WJetPt    200   0.   500.
@@ -249,8 +261,9 @@ DiJetPt              1000   0  5000
 
 LargestDiJetMass        1000   0  5000
 LargestDiJetPt          1000   0  5000
-LargestDiJetEtaProduct     4  -2     2
+LargestDiJetDeltaEta	200    0.   10.
 LargestDiJetDeltaR       200   0    10.
+LargestMassDiJetEtaProduct     4  -2     2
 LargestMassDiJetDeltaEta     200   0    10.
 
 //------------------------------------------------//
@@ -274,6 +287,7 @@ DiElectron_Electron2MetDeltaPhi         72     0       +3.15
 DiElectronPZeta                    200  -100      100
 DiElectronPZetaVis                 100     0      100
 DiElectronZeta1D                   150  -300      300
+DiElectronPt 					   500     0.    1000.
 DiElectronNotReconstructableMass   600     0     1500
 DiElectronReconstructableMass      600     0     1500
 DiElectronReconstructableMassDeltaPt   100 0. 5000.
@@ -289,7 +303,7 @@ Electron1MetDeltaPhiVsDiElectronCosDphi   72  0   +3.15  220    -1.1    1.1
 
 //------------------------------------------------//
 
-FillDiMuon 0
+FillDiMuon 1
 
 DiMuon_Muon1DiJetDeltaPhi       72     0       +3.15
 DiMuon_Muon2DiJetDeltaPhi       72     0       +3.15
@@ -308,6 +322,7 @@ DiMuon_Muon2MetDeltaPhi         72     0       +3.15
 DiMuonPZeta                    200  -100      100
 DiMuonPZetaVis                 100     0      100
 DiMuonZeta1D                   150  -300      300
+DiMuonPt                       1000    0     5000
 DiMuonNotReconstructableMass   600     0     1500
 DiMuonReconstructableMass      600     0     1500
 DiMuonReconstructableMassDeltaPt   100 0. 5000.
@@ -340,6 +355,7 @@ DiTau_Tau2MetDeltaPhi            72     0    +3.15
 DiTauPZeta                      200  -100   100
 DiTauPZetaVis                   100     0   100
 DiTauZeta1D                     150  -300   300
+DiTauPt 					   500     0.    1000.
 DiTauNotReconstructableMass     200     0  5000
 DiTauReconstructableMass        2500    0  5000
 DiTauDiJetReconstructableMass   200	0  5000
@@ -379,6 +395,7 @@ Muon1Tau1RecoAbsCosDphiPtLeadLepandMet 	220 	0. 	1.
 Muon1Tau1PZeta                       200  -100      100
 Muon1Tau1PZetaVis                    100     0      100
 Muon1Tau1Zeta1D                      150  -300      300
+Muon1Tau1Pt 					   500     0.    1000.
 Muon1Tau1DiJetReconstructableMass    100     0     5000
 
 Muon1PtVsTau1Pt                      100     0      500      100     0     500
@@ -408,6 +425,7 @@ Muon1Tau2RecoAbsCosDphiPtLeadLepandMet 	220 	0. 	1.
 Muon1Tau2PZeta                       200  -100      100
 Muon1Tau2PZetaVis                    100     0      100
 Muon1Tau2Zeta1D                      150  -300      300
+Muon1Tau2Pt 					   500     0.    1000.
 Muon1Tau2DiJetReconstructableMass    100     0     5000
 Muon1PtVsTau2Pt                      100     0      500      100     0     500
 Muon1Tau2Zeta2D                      100     0      100      200  -100     100
@@ -436,6 +454,7 @@ Muon2Tau1RecoAbsCosDphiPtLeadLepandMet 	220 	0. 	1.
 Muon2Tau1PZeta                       200  -100      100
 Muon2Tau1PZetaVis                    100     0      100
 Muon2Tau1Zeta1D                      150  -300      300
+Muon2Tau1Pt 					   500     0.    1000.
 Muon2Tau1DiJetReconstructableMass    100     0     5000
 Muon2PtVsTau1Pt                      100     0      500      100     0     500
 Muon2Tau1Zeta2D                      100     0      100      200  -100     100
@@ -465,6 +484,7 @@ Muon2Tau2RecoAbsCosDphiPtLeadLepandMet 	220 	0. 	1.
 Muon2Tau2PZeta                       200  -100      100
 Muon2Tau2PZetaVis                    100     0      100
 Muon2Tau2Zeta1D                      150  -300      300
+Muon2Tau2Pt 					   500     0.    1000.
 Muon2Tau2DiJetReconstructableMass    100     0     5000
 Muon2PtVsTau2Pt                      100     0      500      100     0     500
 Muon2Tau2Zeta2D                      100     0      100      200  -100     100
@@ -495,6 +515,7 @@ Electron1Tau1RecoAbsCosDphiPtLeadLepandMet 	220 	0. 	1.
 Electron1Tau1PZeta                       200  -100      100
 Electron1Tau1PZetaVis                    100     0      100
 Electron1Tau1Zeta1D                      150  -300      300
+Electron1Tau1Pt 					   500     0.    1000.
 Electron1Tau1DiJetReconstructableMass    100     0     5000
 Electron1PtVsTau1Pt                      100     0      500      100     0     500
 Electron1Tau1Zeta2D                      100     0      100      200  -100     100
@@ -523,6 +544,7 @@ Electron1Tau2RecoAbsCosDphiPtLeadLepandMet 	220 	0. 	1.
 Electron1Tau2PZeta                       200  -100      100
 Electron1Tau2PZetaVis                    100     0      100
 Electron1Tau2Zeta1D                      150  -300      300
+Electron1Tau2Pt 					   500     0.    1000.
 Electron1Tau2DiJetReconstructableMass    100     0     5000
 Electron1PtVsTau2Pt                      100     0      500      100     0     500
 Electron1Tau2Zeta2D                      100     0      100      200  -100     100
@@ -551,6 +573,7 @@ Electron2Tau1RecoAbsCosDphiPtLeadLepandMet 	220 	0. 	1.
 Electron2Tau1PZeta                       200  -100      100
 Electron2Tau1PZetaVis                    100     0      100
 Electron2Tau1Zeta1D                      150  -300      300
+Electron2Tau1Pt 					   500     0.    1000.
 Electron2Tau1DiJetReconstructableMass    100     0     5000
 Electron2PtVsTau1Pt                      100     0      500      100     0     500
 Electron2Tau1Zeta2D                      100     0      100      200  -100     100
@@ -579,6 +602,7 @@ Electron2Tau2RecoAbsCosDphiPtLeadLepandMet 	220 	0. 	1.
 Electron2Tau2PZeta                       200  -100      100
 Electron2Tau2PZetaVis                    100     0      100
 Electron2Tau2Zeta1D                      150  -300      300
+Electron2Tau2Pt 					   500     0.    1000.
 Electron2Tau2DiJetReconstructableMass    100     0     5000
 Electron2PtVsTau2Pt                      100     0      500      100     0     500
 Electron2Tau2Zeta2D                      100     0      100      200  -100     100
@@ -610,6 +634,7 @@ Muon1Electron1RecoAbsCosDphiPtLeadLepandMet 	220 	0. 	1.
 Muon1Electron1PZeta                       200  -100      100
 Muon1Electron1PZetaVis                    100     0      100
 Muon1Electron1Zeta1D                      150  -300      300
+Muon1Electron1Pt 					   500     0.    1000.
 Muon1Electron1DiJetReconstructableMass    100     0     5000
 Muon1PtVsElectron1Pt                      100     0      500      100     0     500
 Muon1Electron1Zeta2D                      100     0      100      200  -100     100
@@ -639,6 +664,7 @@ Muon1Electron2RecoAbsCosDphiPtLeadLepandMet 	220 	0. 	1.
 Muon1Electron2PZeta                       200  -100      100
 Muon1Electron2PZetaVis                    100     0      100
 Muon1Electron2Zeta1D                      150  -300      300
+Muon1Electron2Pt 					   500     0.    1000.
 Muon1Electron2DiJetReconstructableMass    100     0     5000
 Muon1PtVsElectron2Pt                      100     0      500      100     0     500
 Muon1Electron2Zeta2D                      100     0      100      200  -100     100
@@ -668,6 +694,7 @@ Muon2Electron1RecoAbsCosDphiPtLeadLepandMet 	220 	0. 	1.
 Muon2Electron1PZeta                       200  -100      100
 Muon2Electron1PZetaVis                    100     0      100
 Muon2Electron1Zeta1D                      150  -300      300
+Muon2Electron1Pt 					   500     0.    1000.
 Muon2Electron1DiJetReconstructableMass    100     0     5000
 Muon2PtVsElectron1Pt                      100     0      500      100     0     500
 Muon2Electron1Zeta2D                      100     0      100      200  -100     100
@@ -698,6 +725,7 @@ Muon2Electron2RecoAbsCosDphiPtLeadLepandMet 	220 	0. 	1.
 Muon2Electron2PZeta                       200  -100      100
 Muon2Electron2PZetaVis                    100     0      100
 Muon2Electron2Zeta1D                      150  -300      300
+Muon2Electron2Pt 					   500     0.    1000.
 Muon2Electron2DiJetReconstructableMass    100     0     5000
 Muon2PtVsElectron2Pt                      100     0      500      100     0     500
 Muon2Electron2Zeta2D                      100     0      100      200  -100     100

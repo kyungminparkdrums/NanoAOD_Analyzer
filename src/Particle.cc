@@ -176,7 +176,7 @@ void Particle::getPartStats(std::string filename) {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 
-Photon::Photon(TTree* _BOOM, std::string filename, std::vector<std::string> syst_names) : Particle(_BOOM, "Photon", filename, syst_names) {
+Photon::Photon(TTree* _BOOM, std::string filename, std::vector<std::string> syst_names, std::string year) : Particle(_BOOM, "Photon", filename, syst_names) {
   SetBranch("Photon_hoe", hoverE);
   SetBranch("Photon_r9", phoR);
   SetBranch("Photon_sieie", sigmaIEtaIEta);
@@ -199,7 +199,6 @@ Generated::Generated(TTree* _BOOM, std::string filename, std::vector<std::string
   SetBranch("GenPart_genPartIdxMother", genPartIdxMother);
   SetBranch("GenPart_status", status);
   SetBranch("GenPart_statusFlags", statusFlags);
-  //SetBranch("Gen_numDaught",numDaught); //01.15.19
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -240,12 +239,11 @@ Jet::Jet(TTree* _BOOM, std::string filename, std::vector<std::string> syst_names
   
   SetBranch("Jet_jetId", jetId);
   SetBranch("Jet_neHEF", neutralHadEnergyFraction);
-  SetBranch("Jet_neEmEF", neutralEmEmEnergyFraction);
+  SetBranch("Jet_neEmEF", neutralEmEnergyFraction);
   SetBranch("Jet_nConstituents", numberOfConstituents);
   SetBranch("Jet_nMuons", nMuons);
   SetBranch("Jet_chHEF", chargedHadronEnergyFraction);
   SetBranch("Jet_chEmEF", chargedEmEnergyFraction);
-  // SetBranch("Jet_btagCSVV2", bDiscriminator);
   
   SetBranch("Jet_btagCSVV2", bDiscriminatorCSVv2);
   SetBranch("Jet_btagDeepB", bDiscriminatorDeepCSV);
@@ -261,6 +259,9 @@ Jet::Jet(TTree* _BOOM, std::string filename, std::vector<std::string> syst_names
     SetBranch("Jet_partonFlavour", partonFlavour);
   }
   
+  if(_BOOM->FindBranch("Jet_genJetIdx")!=0){
+    SetBranch("Jet_genJetIdx", genJetIdx); // index of matched gen jet in the GenJet collection.
+  }
   
 }
 
@@ -297,7 +298,13 @@ bool Jet::passedTightJetID(int nobj) {
   return bit_jet[1]; // This will return the Tight ID bit
 }
 
-
+bool Jet::getPileupJetID(int nobj, int bit_id) {
+   // bit0 - tight ID (true) or fail ID (false), bit1 - medium ID, bit2 - looseID
+   std::bitset<8> bit_jet(puID[nobj]);
+   // std::cout << "PU jet ID = " << puID[nobj] << ", bit_jet = " << bit_jet << ", bit_jet[" << bit_id << "] = " << bit_jet[bit_id] << std::endl;
+   return bit_jet[bit_id];
+ }
+ 
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////    FATJET   ////////////////////////////////////////
@@ -379,32 +386,6 @@ Electron::Electron(TTree* _BOOM, std::string filename, std::vector<std::string> 
   cbIDele1=tmp;
   tmp=elec2.dmap.at("DiscrByCBID");
   cbIDele2=tmp;
-  
-  /*
-  tmp=elec1.dmap.at("DiscrByHLTID");
-  cbHLTIDele1=tmp;
-  tmp=elec2.dmap.at("DiscrByHLTID");
-  cbHLTIDele2=tmp;
-  */
-  /*
-  if((elec1.bfind("DoDiscrByIsolation") || elec2.bfind("DoDiscrByIsolation")) && _BOOM->FindBranch("Electron_mvaFall17Iso")!=0 ) {
-   SetBranch("Electron_miniPFRelIso_all", miniPFRelIso_all);
-   SetBranch("Electron_miniPFRelIso_chg", miniPFRelIso_chg);
-   SetBranch("Electron_mvaFall17Iso", mvaFall17Iso);
-   SetBranch("Electron_mvaFall17noIso", mvaFall17noIso);
-   SetBranch("Electron_pfRelIso03_all", pfRelIso03_all);
-   SetBranch("Electron_pfRelIso03_chg", pfRelIso03_chg);
-  }
-
-  if((elec1.bfind("DoDiscrByIsolation") || elec2.bfind("DoDiscrByIsolation")) && _BOOM->FindBranch("Electron_mvaSpring16GP")!=0 ) {
-   SetBranch("Electron_miniPFRelIso_all", miniPFRelIso_all);
-   SetBranch("Electron_miniPFRelIso_chg", miniPFRelIso_chg);
-   SetBranch("Electron_mvaSpring16GP", mvaSpring16GP);
-   SetBranch("Electron_mvaSpring16HZZ", mvaSpring16HZZ);
-   SetBranch("Electron_pfRelIso03_all", pfRelIso03_all);
-   SetBranch("Electron_pfRelIso03_chg", pfRelIso03_chg);
-  }
-  */
 
   if((elec1.bfind("DoDiscrByIsolation") || elec2.bfind("DoDiscrByIsolation"))) {
    SetBranch("Electron_miniPFRelIso_all", miniPFRelIso_all);
@@ -588,6 +569,10 @@ Taus::Taus(TTree* _BOOM, std::string filename, std::vector<std::string> syst_nam
   SetBranch("Tau_chargedIso", chargedIsoPtSum);
   SetBranch("Tau_neutralIso", neutralIso);
   SetBranch("Tau_puCorr", puCorr);
+
+  // ----- Tau gen-matching for ID SFs ----- //
+  if(_BOOM->FindBranch("Tau_genPartFlav") != 0){ SetBranch("Tau_genPartFlav", genPartFlav); } // Flavour of genParticle for MC matching to status==2 taus: 1 = prompt electron, 2 = prompt muon, 3 = tau->e decay, 4 = tau->mu decay, 5 = hadronic tau decay, 0 = unknown or unmatched
+  if(_BOOM->FindBranch("Tau_genPartIdx") != 0){ SetBranch("Tau_genPartIdx", genPartIdx); } // (index to Genpart collection) Index into genParticle list for MC matching to status==2 taus
   
 }
 
@@ -619,14 +604,32 @@ bool Taus::get_Iso(int index, double onetwo, double flipisolation) const {
     tau_isomin_mask=tau2minIso;
     tau_isomax_mask=tau2maxIso;
   }
-  
-  if(!flipisolation){
-    //cout<<tau_isomax_mask<<"  "<<tau_iso<<"   "<<(tau_isomax_mask& tau_iso)<<"   "<<  (tau_isomax_mask& tau_iso).count()<<std::endl; 
-    // return (tau_isomax_mask& tau_iso).count();
-    return (tau_isomin_mask& tau_iso).count();
-  }else{
-    // return(!((tau_isomax_mask&tau_iso).count()) and (tau_isomin_mask&tau_iso).count());
-    return(!((tau_isomin_mask&tau_iso).count()) and (tau_isomax_mask&tau_iso).count());
+
+  // Bitset operation: 
+  // foo = 0110; bar = 0011
+  // foo&bar = 0010
+  // (foo&bar).count() = 1 (number of ones in the bitset)
+
+  if(!flipisolation && (tau_isomin_mask.count() == 0)){ // Requiring a non-isolated tau 
+    // std::cout << "Tau isolation (1) = " << tau_iso << ", requirement = " << tau_isomin_mask << std::endl;
+    // std::cout << "(no flip isolation) Isolation requirement passed? " << (tau_isomin_mask == tau_iso) << std::endl;
+    return (tau_isomin_mask == tau_iso);
+  }
+  else if(flipisolation && (tau_isomax_mask.count() == 0)){ // Requiring a non-isolated tau by flipping isolation
+    // std::cout << "Tau isolation (2) = " << tau_iso << ", min requirement = " << tau_isomin_mask << ", max requirement = " << tau_isomax_mask << std::endl;
+    // std::cout << "(flip isolation) Isolation requirement passed? " << (tau_isomax_mask == tau_iso) << std::endl;
+    return (!((tau_isomin_mask&tau_iso).count()) and (tau_isomax_mask == tau_iso));
+  }
+  else{
+    if(!flipisolation){
+      // std::cout << "Tau isolation (3) = " << tau_iso << ", requirement = " << tau_isomin_mask << std::endl;
+      // std::cout << "(no flip isolation) Isolation requirement passed? " << (tau_isomin_mask& tau_iso).count() << std::endl;
+      return (tau_isomin_mask&tau_iso).count();
+    }else{
+      // std::cout << "Tau isolation (4) = " << tau_iso << ", min requirement = " << tau_isomin_mask << ", max requirement = " << tau_isomax_mask << std::endl;
+      // std::cout << "(flip isolation) Isolation requirement passed? " << ((!((tau_isomin_mask&tau_iso).count())) && ((tau_isomax_mask&tau_iso).count())) << std::endl;
+      return(!((tau_isomin_mask&tau_iso).count()) and (tau_isomax_mask&tau_iso).count());
+    }
   }
 }
 
@@ -637,7 +640,6 @@ bool Taus::pass_against_Elec(CUTS ePos, int index) {
     std::bitset<8> tmp(tau2ele);
     tau_ele_mask=tmp;
   }
-  //cout<<tau_ele_mask<<"  "<<tau_ele<<"   "<<(tau_ele_mask&tau_ele)<<"   "<<  (tau_ele_mask&tau_ele).count()<<std::endl; 
   return (tau_ele_mask&tau_ele).count();
 }
 
@@ -648,6 +650,5 @@ bool Taus::pass_against_Muon(CUTS ePos, int index) {
     std::bitset<8> tmp(tau2mu);
     tau_mu_mask=tmp;
   }
-  //cout<<tau_mu_mask<<"  "<<tau_mu<<"   "<<(tau_mu_mask&tau_mu)<<"   "<<  (tau_mu_mask&tau_mu).count()<<std::endl; 
   return (tau_mu_mask&tau_mu).count();
 }

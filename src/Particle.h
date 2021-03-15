@@ -117,7 +117,7 @@ protected:
 class Photon : public Particle {
 public:
   Photon();
-  Photon(TTree*, std::string, std::vector<std::string>);
+  Photon(TTree*, std::string, std::vector<std::string>, std::string);
 
   float hoverE[MAXINDEX];
   float phoR[MAXINDEX];
@@ -178,6 +178,7 @@ public:
   std::vector<CUTS> overlapCuts(CUTS);
   bool passedLooseJetID(int);
   bool passedTightJetID(int);
+  bool getPileupJetID(int, int);
    
   float area[MAXINDEX];
   // float bDiscriminator[MAXINDEX];
@@ -187,7 +188,7 @@ public:
 	
   float chargedEmEnergyFraction[MAXINDEX];
   float chargedHadronEnergyFraction[MAXINDEX];
-  float neutralEmEmEnergyFraction[MAXINDEX];
+  float neutralEmEnergyFraction[MAXINDEX];
   float neutralHadEnergyFraction[MAXINDEX];
   int jetId[MAXINDEX];
   int nMuons[MAXINDEX];
@@ -197,6 +198,7 @@ public:
   float rawFactor[MAXINDEX];
   int matchingMuonIdx1[MAXINDEX];
   int matchingMuonIdx2[MAXINDEX];
+  int genJetIdx[MAXINDEX];
   
  protected:
 
@@ -327,6 +329,10 @@ public:
   float chargedIsoPtSum[MAXINDEX];
   float neutralIso[MAXINDEX];
   float puCorr[MAXINDEX];
+
+  // ----- Tau gen-matching for ID SFs ----- //
+  UChar_t genPartFlav[MAXINDEX];
+  Int_t genPartIdx[MAXINDEX];
   
 };
 
